@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CardIdRouteImport } from './routes/card.$id'
 import { Route as AdminNewRouteImport } from './routes/admin.new'
 import { Route as AdminEditIdRouteImport } from './routes/admin.edit.$id'
 
@@ -22,6 +23,11 @@ const AdminRoute = AdminRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CardIdRoute = CardIdRouteImport.update({
+  id: '/card/$id',
+  path: '/card/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminNewRoute = AdminNewRouteImport.update({
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/new': typeof AdminNewRoute
+  '/card/$id': typeof CardIdRoute
   '/admin/edit/$id': typeof AdminEditIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/new': typeof AdminNewRoute
+  '/card/$id': typeof CardIdRoute
   '/admin/edit/$id': typeof AdminEditIdRoute
 }
 export interface FileRoutesById {
@@ -52,19 +60,27 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/new': typeof AdminNewRoute
+  '/card/$id': typeof CardIdRoute
   '/admin/edit/$id': typeof AdminEditIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/admin/new' | '/admin/edit/$id'
+  fullPaths: '/' | '/admin' | '/admin/new' | '/card/$id' | '/admin/edit/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/admin/new' | '/admin/edit/$id'
-  id: '__root__' | '/' | '/admin' | '/admin/new' | '/admin/edit/$id'
+  to: '/' | '/admin' | '/admin/new' | '/card/$id' | '/admin/edit/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/admin/new'
+    | '/card/$id'
+    | '/admin/edit/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  CardIdRoute: typeof CardIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -81,6 +97,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/card/$id': {
+      id: '/card/$id'
+      path: '/card/$id'
+      fullPath: '/card/$id'
+      preLoaderRoute: typeof CardIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/new': {
@@ -115,6 +138,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  CardIdRoute: CardIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
