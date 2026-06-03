@@ -1,0 +1,12 @@
+{
+  "name": "Carta Colecionável — Laís EX",
+  "short_name": "Carta EX",
+  "description": "Cartas colecionáveis personalizadas de amor.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a0d1f",
+  "theme_color": "#ff4d6d",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
