@@ -1,4 +1,4 @@
-import { type CardData } from "@/lib/cards";
+import { type CardData, isRare } from "@/lib/cards";
 import { Heart, Sparkles, Shield, Zap } from "lucide-react";
 
 interface Props {
@@ -17,14 +17,25 @@ const rarityBadge: Record<string, string> = {
 
 export function HoloCard({ card, className = "", printable = false }: Props) {
   const accent = card.primaryColor || "#ff4d6d";
+  const accent2 = card.secondaryColor || "#a4508b";
+  const rare = isRare(card.rarity);
+  const frame = card.frame || "holo";
+
+  const frameStyles: Record<string, React.CSSProperties> = {
+    classic: { background: `linear-gradient(160deg, ${accent}, ${accent2})`, padding: 10 },
+    neon: { background: `linear-gradient(160deg, ${accent}, #000 70%)`, padding: 8, boxShadow: `0 0 30px ${accent}` },
+    gold: { background: `linear-gradient(160deg, #f6d365, #b8860b)`, padding: 12 },
+    minimal: { background: `#0a0a0a`, padding: 6 },
+    holo: {
+      background: `linear-gradient(160deg, ${accent}, ${accent2} 50%, #1a0d1f)`,
+      padding: 12,
+    },
+  };
+
   return (
     <div
-      className={`holo-card relative w-[320px] sm:w-[360px] aspect-[2.5/3.5] shadow-glow ${className}`}
-      style={{
-        background: `linear-gradient(160deg, ${accent}, oklch(0.2 0.08 320) 60%, #1a0d1f)`,
-        borderRadius: "1.25rem",
-        padding: "12px",
-      }}
+      className={`${rare || frame === "holo" ? "holo-card" : ""} relative w-[320px] sm:w-[360px] aspect-[2.5/3.5] shadow-glow ${className}`}
+      style={{ ...frameStyles[frame], borderRadius: "1.25rem" }}
     >
       <div
         className="relative h-full w-full rounded-[1rem] p-3 flex flex-col gap-2"
@@ -54,7 +65,11 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
         {/* Image */}
         <div
           className="relative flex-1 rounded-md overflow-hidden border border-white/10"
-          style={{ background: "rgba(255,255,255,0.04)" }}
+          style={{
+            background: card.imageDataUrl
+              ? "rgba(255,255,255,0.04)"
+              : `linear-gradient(135deg, ${accent}, ${accent2})`,
+          }}
         >
           {card.imageDataUrl ? (
             <img
@@ -63,8 +78,8 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
               className="absolute inset-0 h-full w-full object-cover"
             />
           ) : (
-            <div className="absolute inset-0 grid place-items-center text-white/40">
-              <Heart size={48} />
+            <div className="absolute inset-0 grid place-items-center text-white/60">
+              <Heart size={56} className="drop-shadow-lg" />
             </div>
           )}
           <div className="absolute top-2 right-2 z-[4]">

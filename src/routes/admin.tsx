@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { listCards, deleteCard, type CardData, SAMPLE_CARD, saveCard, newId } from "@/lib/cards";
-import { Plus, Trash2, Edit3, ExternalLink, Sparkles } from "lucide-react";
+import { listCards, deleteCard, type CardData, SAMPLE_CARD, saveCard, newId, isRare } from "@/lib/cards";
+import { Plus, Trash2, Edit3, ExternalLink, Sparkles, Copy, QrCode, Layers, Heart } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Painel — Cartas" }] }),
@@ -24,6 +24,16 @@ function AdminPage() {
     refresh();
     nav({ to: "/admin/edit/$id", params: { id } });
   }
+
+  function duplicate(c: CardData) {
+    const id = newId();
+    saveCard({ ...c, id, name: c.name + " (cópia)", createdAt: new Date().toISOString() });
+    refresh();
+  }
+
+  const total = cards.length;
+  const rareCount = cards.filter((c) => isRare(c.rarity)).length;
+  const last = cards[0];
 
   return (
     <main className="min-h-screen px-6 py-10 max-w-5xl mx-auto">
@@ -49,6 +59,27 @@ function AdminPage() {
         </div>
       </header>
 
+      {/* Dashboard */}
+      <section className="grid sm:grid-cols-3 gap-4 mb-8">
+        <Stat icon={Layers} label="Cartas criadas" value={total} />
+        <Stat icon={QrCode} label="QR Codes gerados" value={total} />
+        <Stat icon={Heart} label="Cartas raras" value={rareCount} accent />
+      </section>
+
+      {last && (
+        <div className="glass rounded-2xl p-5 mb-6 flex items-center gap-4">
+          <div className="w-12 h-16 rounded-lg shrink-0" style={{ background: `linear-gradient(135deg, ${last.primaryColor}, ${last.secondaryColor || "#000"})` }} />
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Última criada</p>
+            <p className="font-semibold truncate">{last.name}</p>
+            <p className="text-xs text-muted-foreground">{new Date(last.createdAt).toLocaleString()}</p>
+          </div>
+          <Link to="/card/$id" params={{ id: last.id }} className="text-xs glass px-3 py-1.5 rounded-full">
+            Ver QR
+          </Link>
+        </div>
+      )}
+
       {cards.length === 0 ? (
         <div className="glass rounded-2xl p-12 text-center">
           <p className="text-muted-foreground mb-4">Nenhuma carta criada ainda.</p>
@@ -68,7 +99,7 @@ function AdminPage() {
                 style={{
                   background: c.imageDataUrl
                     ? `url(${c.imageDataUrl}) center/cover`
-                    : `linear-gradient(135deg, ${c.primaryColor}, #000)`,
+                    : `linear-gradient(135deg, ${c.primaryColor}, ${c.secondaryColor || "#000"})`,
                 }}
               />
               <div className="flex-1 min-w-0">
@@ -76,21 +107,27 @@ function AdminPage() {
                 <p className="text-xs text-muted-foreground">{c.rarity} · HP {c.hp}</p>
                 <p className="text-[10px] font-mono text-muted-foreground mt-1">/scan/{c.id}</p>
               </div>
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 text-xs">
                 <Link
                   to="/card/$id"
                   params={{ id: c.id }}
-                  className="text-xs glass px-3 py-1.5 rounded-full inline-flex items-center gap-1"
+                  className="glass px-3 py-1.5 rounded-full inline-flex items-center gap-1"
                 >
-                  <ExternalLink size={12} /> Imprimir
+                  <ExternalLink size={12} /> QR / Imprimir
                 </Link>
                 <Link
                   to="/admin/edit/$id"
                   params={{ id: c.id }}
-                  className="text-xs glass px-3 py-1.5 rounded-full inline-flex items-center gap-1"
+                  className="glass px-3 py-1.5 rounded-full inline-flex items-center gap-1"
                 >
                   <Edit3 size={12} /> Editar
                 </Link>
+                <button
+                  onClick={() => duplicate(c)}
+                  className="glass px-3 py-1.5 rounded-full inline-flex items-center gap-1"
+                >
+                  <Copy size={12} /> Duplicar
+                </button>
                 <button
                   onClick={() => {
                     if (confirm("Apagar carta?")) {
@@ -98,7 +135,7 @@ function AdminPage() {
                       refresh();
                     }
                   }}
-                  className="text-xs text-rose-300/80 px-3 py-1.5 inline-flex items-center gap-1"
+                  className="text-rose-300/80 px-3 py-1.5 inline-flex items-center gap-1"
                 >
                   <Trash2 size={12} /> Apagar
                 </button>
@@ -108,5 +145,25 @@ function AdminPage() {
         </ul>
       )}
     </main>
+  );
+}
+
+function Stat({
+  icon: Icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: typeof Layers;
+  label: string;
+  value: number;
+  accent?: boolean;
+}) {
+  return (
+    <div className={`glass rounded-2xl p-5 ${accent ? "shadow-glow" : ""}`}>
+      <Icon className={accent ? "text-rose-300 mb-2" : "text-muted-foreground mb-2"} size={18} />
+      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className={`text-3xl font-bold mt-1 ${accent ? "text-gradient-romance" : ""}`}>{value}</p>
+    </div>
   );
 }

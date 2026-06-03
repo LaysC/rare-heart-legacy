@@ -1,16 +1,20 @@
-import { createFileRoute, useParams, Link } from "@tanstack/react-router";
+import { createFileRoute, useParams, useSearch, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { getCard, type CardData } from "@/lib/cards";
+import { getCard, decodeCardFromUrl, isRare, type CardData } from "@/lib/cards";
 import { HoloCard } from "@/components/HoloCard";
-import { Heart, Sparkles, ChevronRight, Calendar } from "lucide-react";
+import { Heart, Sparkles, ChevronRight, Calendar, Gift } from "lucide-react";
+import { PackOpening } from "@/components/PackOpening";
 
 export const Route = createFileRoute("/scan/$id")({
   head: () => ({ meta: [{ title: "Análise da carta…" }] }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    d: typeof search.d === "string" ? search.d : undefined,
+  }),
   component: ScanPage,
 });
 
-type Stage = "boot" | "scan" | "partial" | "reveal" | "cta" | "final";
+type Stage = "pack" | "opening" | "boot" | "scan" | "partial" | "reveal" | "final";
 
 const SCAN_MESSAGES = [
   "Verificando autenticidade…",
@@ -22,11 +26,20 @@ const SCAN_MESSAGES = [
 
 function ScanPage() {
   const { id } = useParams({ from: "/scan/$id" });
+  const { d } = useSearch({ from: "/scan/$id" });
   const [card, setCard] = useState<CardData | undefined>();
-  const [stage, setStage] = useState<Stage>("boot");
+  const [stage, setStage] = useState<Stage>("pack");
   const [msgIdx, setMsgIdx] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => setCard(getCard(id)), [id]);
+  useEffect(() => {
+    // 1) try URL payload (works cross-device when scanned)
+    // 2) fall back to local storage (works on the device that created it)
+    const fromUrl = d ? decodeCardFromUrl(d) : undefined;
+    const fromLocal = getCard(id);
+    setCard(fromUrl ?? fromLocal);
+    setLoading(false);
+  }, [id, d]);
 
   useEffect(() => {
     if (stage !== "scan") return;
@@ -34,32 +47,33 @@ function ScanPage() {
     return () => clearInterval(t);
   }, [stage]);
 
+  // Sequenced stage transitions, kicked off after pack is opened
   useEffect(() => {
-    const seq: { s: Stage; ms: number }[] = [
-      { s: "boot", ms: 1800 },
-      { s: "scan", ms: 6500 },
-      { s: "partial", ms: 2800 },
-      { s: "reveal", ms: 0 },
+    if (stage !== "opening") return;
+    const timers = [
+      setTimeout(() => setStage("boot"), 2600), // pack opening animation
+      setTimeout(() => setStage("scan"), 4400),
+      setTimeout(() => setStage("partial"), 10800),
+      setTimeout(() => setStage("reveal"), 13600),
     ];
-    let i = 0;
-    setStage(seq[0].s);
-    const tick = () => {
-      const cur = seq[i];
-      if (i < seq.length - 1) {
-        setTimeout(() => {
-          i++;
-          setStage(seq[i].s);
-          if (i < seq.length - 1) tick();
-        }, cur.ms);
-      }
-    };
-    tick();
-  }, []);
+    return () => timers.forEach(clearTimeout);
+  }, [stage]);
+
+  if (loading) {
+    return <main className="min-h-screen grid place-items-center"><div className="w-10 h-10 rounded-full border-2 border-rose-400/40 border-t-rose-400 animate-spin" /></main>;
+  }
 
   if (!card) {
     return (
-      <main className="min-h-screen grid place-items-center px-6">
-        <p className="text-muted-foreground">Carta não encontrada.</p>
+      <main className="min-h-screen grid place-items-center px-6 text-center">
+        <div className="glass rounded-2xl p-8 max-w-sm">
+          <p className="text-muted-foreground mb-3">Carta não encontrada.</p>
+          <p className="text-xs text-muted-foreground">
+            O QR pode ter sido gerado num link curto. Peça para gerar novamente
+            ou abra no mesmo dispositivo onde foi criada.
+          </p>
+          <Link to="/" className="mt-4 inline-block text-rose-300 text-sm">voltar ao início</Link>
+        </div>
       </main>
     );
   }
@@ -67,6 +81,59 @@ function ScanPage() {
   return (
     <main className="min-h-screen px-6 py-10 flex flex-col items-center justify-center overflow-hidden">
       <AnimatePresence mode="wait">
+        {stage === "pack" && (
+          <motion.div
+            key="pack"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="text-center"
+          >
+            <PackOpening card={card} onOpen={() => setStage("opening")} />
+          </motion.div>
+        )}
+
+        {stage === "opening" && (
+          <motion.div
+            key="opening"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="relative"
+          >
+            {/* Burst flash */}
+            <motion.div
+              className="fixed inset-0 bg-white"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 1, 0.2, 0] }}
+              transition={{ duration: 1.4, times: [0, 0.2, 0.5, 1] }}
+            />
+            <motion.div
+              initial={{ scale: 0.2, opacity: 0, rotate: -30 }}
+              animate={{ scale: 1.1, opacity: 1, rotate: 0 }}
+              transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
+              className="relative"
+            >
+              <div className="absolute inset-0 rounded-full bg-gradient-romance blur-3xl opacity-70 animate-pulse" />
+              <div className="relative"><HoloCard card={card} /></div>
+            </motion.div>
+            {/* Particles */}
+            {Array.from({ length: 20 }).map((_, i) => (
+              <motion.span
+                key={i}
+                className="absolute top-1/2 left-1/2 w-1.5 h-1.5 rounded-full bg-rose-300"
+                initial={{ x: 0, y: 0, opacity: 1 }}
+                animate={{
+                  x: (Math.random() - 0.5) * 600,
+                  y: (Math.random() - 0.5) * 600,
+                  opacity: 0,
+                }}
+                transition={{ duration: 1.6, delay: 0.2, ease: "easeOut" }}
+              />
+            ))}
+          </motion.div>
+        )}
+
         {stage === "boot" && (
           <motion.div
             key="boot"
@@ -114,7 +181,7 @@ function ScanPage() {
                 className="h-full bg-gradient-romance"
                 initial={{ width: "0%" }}
                 animate={{ width: "100%" }}
-                transition={{ duration: 6.5, ease: "easeInOut" }}
+                  transition={{ duration: 6.4, ease: "easeInOut" }}
               />
             </div>
           </motion.div>
@@ -149,8 +216,18 @@ function ScanPage() {
           >
             <motion.div
               initial={{ scale: 0.6, rotateY: -90, opacity: 0 }}
-              animate={{ scale: 1, rotateY: 0, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 80, damping: 14 }}
+              animate={{
+                scale: 1,
+                rotateY: isRare(card.rarity) ? [0, 8, -8, 6, -6, 0] : 0,
+                opacity: 1,
+              }}
+              transition={{
+                scale: { type: "spring", stiffness: 80, damping: 14 },
+                rotateY: isRare(card.rarity)
+                  ? { duration: 6, repeat: Infinity, ease: "easeInOut" }
+                  : undefined,
+              }}
+              style={{ transformStyle: "preserve-3d", perspective: 1000 }}
             >
               <HoloCard card={card} />
             </motion.div>

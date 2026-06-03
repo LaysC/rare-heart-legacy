@@ -1,4 +1,5 @@
 export type Rarity = "Comum" | "Rara" | "Ultra Rara" | "Lendária" | "Única";
+export type FrameStyle = "classic" | "neon" | "gold" | "minimal" | "holo";
 
 export interface CardData {
   id: string;
@@ -13,6 +14,8 @@ export interface CardData {
   displayValue: string;
   imageDataUrl: string;
   primaryColor: string;
+  secondaryColor?: string;
+  frame?: FrameStyle;
   createdAt: string;
   footer?: string;
   gallery?: string[];
@@ -70,6 +73,8 @@ export const SAMPLE_CARD: Omit<CardData, "id" | "createdAt"> = {
   displayValue: "INESTIMÁVEL",
   imageDataUrl: "",
   primaryColor: "#ff4d6d",
+  secondaryColor: "#a4508b",
+  frame: "holo",
   footer: "Edição Coração — 1 de 1",
   gallery: [],
   timeline: [],
@@ -77,3 +82,35 @@ export const SAMPLE_CARD: Omit<CardData, "id" | "createdAt"> = {
     "Cada dia ao seu lado é uma página rara nesta coleção que estamos montando juntos.",
   finalMessage: "Feliz Dia dos Namorados, meu amor. Você é a minha carta lendária.",
 };
+
+// URL encoding so QR codes work across devices without backend
+export function encodeCardToUrl(card: CardData): string {
+  // Try with full payload (including image)
+  const tryEncode = (c: CardData) => {
+    const json = JSON.stringify(c);
+    if (typeof window === "undefined") return Buffer.from(json).toString("base64");
+    return btoa(unescape(encodeURIComponent(json)));
+  };
+  let payload = tryEncode(card);
+  // QR codes start failing reliably around ~2000 chars. Strip image as fallback.
+  if (payload.length > 1800 && card.imageDataUrl) {
+    payload = tryEncode({ ...card, imageDataUrl: "" });
+  }
+  return payload;
+}
+
+export function decodeCardFromUrl(payload: string): CardData | undefined {
+  try {
+    const json =
+      typeof window === "undefined"
+        ? Buffer.from(payload, "base64").toString()
+        : decodeURIComponent(escape(atob(payload)));
+    return JSON.parse(json) as CardData;
+  } catch {
+    return undefined;
+  }
+}
+
+export function isRare(rarity: Rarity) {
+  return rarity === "Lendária" || rarity === "Ultra Rara" || rarity === "Única";
+}
