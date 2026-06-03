@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { getCard, type CardData } from "@/lib/cards";
+import { getCard, encodeCardToUrl, type CardData } from "@/lib/cards";
 import { HoloCard } from "@/components/HoloCard";
-import { Printer, ArrowLeft, QrCode } from "lucide-react";
+import { Printer, ArrowLeft, QrCode, Copy, Check } from "lucide-react";
 
 export const Route = createFileRoute("/card/$id")({
   head: () => ({ meta: [{ title: "Carta" }] }),
@@ -13,18 +13,32 @@ function CardView() {
   const { id } = useParams({ from: "/card/$id" });
   const [card, setCard] = useState<CardData | undefined>();
   const [qr, setQr] = useState<string>("");
+  const [scanUrl, setScanUrl] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const c = getCard(id);
     setCard(c);
-    if (typeof window === "undefined") return;
-    const url = `${window.location.origin}/scan/${id}`;
+    if (typeof window === "undefined" || !c) return;
+    const payload = encodeCardToUrl(c);
+    const url = `${window.location.origin}/scan/${id}?d=${payload}`;
+    setScanUrl(url);
     import("qrcode").then(({ default: QRCode }) =>
       QRCode.toDataURL(url, {
         width: 360,
         margin: 1,
+        errorCorrectionLevel: "L",
         color: { dark: "#1a0d1f", light: "#ffffff" },
-      }).then(setQr),
+      })
+        .then(setQr)
+        .catch(() => {
+          // Fallback: tiny URL with just id (works if user opens on same device)
+          QRCode.toDataURL(`${window.location.origin}/scan/${id}`, {
+            width: 360,
+            margin: 1,
+            color: { dark: "#1a0d1f", light: "#ffffff" },
+          }).then(setQr);
+        }),
     );
   }, [id]);
 
@@ -35,8 +49,6 @@ function CardView() {
       </main>
     );
   }
-
-  const scanUrl = typeof window !== "undefined" ? `${window.location.origin}/scan/${id}` : "";
 
   return (
     <main className="min-h-screen px-6 py-10 max-w-5xl mx-auto">
@@ -59,9 +71,22 @@ function CardView() {
             <QrCode size={12} /> Escaneie
           </div>
           {qr && <img src={qr} alt="QR Code" className="w-full rounded-xl bg-white p-2" />}
-          <p className="mt-4 text-xs text-muted-foreground break-all">{scanUrl}</p>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(scanUrl);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            }}
+            className="mt-4 text-[10px] text-muted-foreground break-all inline-flex items-center gap-1 hover:text-foreground print:hidden"
+          >
+            {copied ? <Check size={10} /> : <Copy size={10} />}
+            {copied ? "Copiado!" : "Copiar link completo"}
+          </button>
           <p className="mt-3 text-sm font-semibold text-gradient-romance">
             Aponte a câmera para revelar a carta.
+          </p>
+          <p className="mt-2 text-[10px] text-muted-foreground">
+            O QR contém a carta completa — funciona em qualquer celular.
           </p>
         </div>
       </div>
