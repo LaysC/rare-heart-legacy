@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
-import { type CardData, type Rarity, saveCard, newId, SAMPLE_CARD } from "@/lib/cards";
+import { type CardData, type Rarity, type FrameStyle, saveCard, newId, SAMPLE_CARD } from "@/lib/cards";
 import { HoloCard } from "./HoloCard";
 import { useNavigate } from "@tanstack/react-router";
-import { Upload, Save } from "lucide-react";
+import { Upload, Save, Trash2 } from "lucide-react";
 
 const RARITIES: Rarity[] = ["Comum", "Rara", "Ultra Rara", "Lendária", "Única"];
+const FRAMES: { value: FrameStyle; label: string }[] = [
+  { value: "holo", label: "Holográfica" },
+  { value: "classic", label: "Clássica" },
+  { value: "neon", label: "Neon" },
+  { value: "gold", label: "Ouro" },
+  { value: "minimal", label: "Minimalista" },
+];
 
 export function CardEditor({ initial }: { initial?: CardData }) {
   const nav = useNavigate();
@@ -59,6 +66,14 @@ export function CardEditor({ initial }: { initial?: CardData }) {
           <Field label="Cor principal">
             <input type="color" className="h-10 w-full rounded-lg bg-transparent" value={card.primaryColor} onChange={(e) => update("primaryColor", e.target.value)} />
           </Field>
+          <Field label="Cor secundária">
+            <input type="color" className="h-10 w-full rounded-lg bg-transparent" value={card.secondaryColor || "#a4508b"} onChange={(e) => update("secondaryColor", e.target.value)} />
+          </Field>
+          <Field label="Moldura">
+            <select className={inp} value={card.frame || "holo"} onChange={(e) => update("frame", e.target.value as FrameStyle)}>
+              {FRAMES.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+            </select>
+          </Field>
           <Field label="Valor exibido">
             <input className={inp} value={card.displayValue} onChange={(e) => update("displayValue", e.target.value)} />
           </Field>
@@ -85,10 +100,28 @@ export function CardEditor({ initial }: { initial?: CardData }) {
           <textarea className={inp + " min-h-16"} value={card.finalMessage || ""} onChange={(e) => update("finalMessage", e.target.value)} />
         </Field>
         <Field label="Imagem da carta">
-          <label className={inp + " cursor-pointer inline-flex items-center gap-2 text-sm"}>
-            <Upload size={14} /> {card.imageDataUrl ? "Trocar imagem" : "Enviar imagem"}
-            <input type="file" accept="image/*" className="hidden" onChange={onImage} />
-          </label>
+          <div className="flex items-center gap-2">
+            {card.imageDataUrl && (
+              <img src={card.imageDataUrl} alt="" className="w-14 h-14 rounded-lg object-cover border border-border" />
+            )}
+            <label className={inp + " cursor-pointer inline-flex items-center gap-2 text-sm flex-1"}>
+              <Upload size={14} /> {card.imageDataUrl ? "Trocar imagem" : "Enviar imagem"}
+              <input type="file" accept="image/*" className="hidden" onChange={onImage} />
+            </label>
+            {card.imageDataUrl && (
+              <button
+                type="button"
+                onClick={() => update("imageDataUrl", "")}
+                className="px-3 py-2 rounded-lg text-rose-300 hover:bg-rose-500/10"
+                title="Remover imagem"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-1">
+            Dica: imagens grandes serão omitidas do QR code para garantir leitura. Use até ~300KB.
+          </p>
         </Field>
 
         <button
