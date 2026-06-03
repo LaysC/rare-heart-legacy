@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminNewRouteImport } from './routes/admin.new'
+import { Route as AdminEditIdRouteImport } from './routes/admin.edit.$id'
 
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
@@ -28,29 +29,37 @@ const AdminNewRoute = AdminNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminEditIdRoute = AdminEditIdRouteImport.update({
+  id: '/edit/$id',
+  path: '/edit/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/new': typeof AdminNewRoute
+  '/admin/edit/$id': typeof AdminEditIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/new': typeof AdminNewRoute
+  '/admin/edit/$id': typeof AdminEditIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/new': typeof AdminNewRoute
+  '/admin/edit/$id': typeof AdminEditIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/admin/new'
+  fullPaths: '/' | '/admin' | '/admin/new' | '/admin/edit/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/admin/new'
-  id: '__root__' | '/' | '/admin' | '/admin/new'
+  to: '/' | '/admin' | '/admin/new' | '/admin/edit/$id'
+  id: '__root__' | '/' | '/admin' | '/admin/new' | '/admin/edit/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -81,15 +90,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminNewRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/edit/$id': {
+      id: '/admin/edit/$id'
+      path: '/edit/$id'
+      fullPath: '/admin/edit/$id'
+      preLoaderRoute: typeof AdminEditIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
   AdminNewRoute: typeof AdminNewRoute
+  AdminEditIdRoute: typeof AdminEditIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminNewRoute: AdminNewRoute,
+  AdminEditIdRoute: AdminEditIdRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
