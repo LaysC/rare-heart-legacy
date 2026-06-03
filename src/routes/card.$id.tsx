@@ -1,6 +1,5 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import QRCode from "qrcode";
 import { getCard, type CardData } from "@/lib/cards";
 import { HoloCard } from "@/components/HoloCard";
 import { Printer, ArrowLeft, QrCode } from "lucide-react";
@@ -18,10 +17,15 @@ function CardView() {
   useEffect(() => {
     const c = getCard(id);
     setCard(c);
-    if (typeof window !== "undefined") {
-      const url = `${window.location.origin}/scan/${id}`;
-      QRCode.toDataURL(url, { width: 360, margin: 1, color: { dark: "#1a0d1f", light: "#ffffff" } }).then(setQr);
-    }
+    if (typeof window === "undefined") return;
+    const url = `${window.location.origin}/scan/${id}`;
+    import("qrcode").then(({ default: QRCode }) =>
+      QRCode.toDataURL(url, {
+        width: 360,
+        margin: 1,
+        color: { dark: "#1a0d1f", light: "#ffffff" },
+      }).then(setQr),
+    );
   }, [id]);
 
   if (!card) {
