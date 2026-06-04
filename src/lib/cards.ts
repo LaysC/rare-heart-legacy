@@ -83,6 +83,27 @@ export const SAMPLE_CARD: Omit<CardData, "id" | "createdAt"> = {
   finalMessage: "Feliz Dia dos Namorados, meu amor. Você é a minha carta lendária.",
 };
 
+export const BLANK_CARD: Omit<CardData, "id" | "createdAt"> = {
+  name: "",
+  category: "",
+  rarity: "Rara",
+  hp: 100,
+  description: "",
+  specialAttack: "",
+  ability: "",
+  secretMessage: "",
+  displayValue: "",
+  imageDataUrl: "",
+  primaryColor: "#ff4d6d",
+  secondaryColor: "#a4508b",
+  frame: "holo",
+  footer: "",
+  gallery: [],
+  timeline: [],
+  romanticText: "",
+  finalMessage: "",
+};
+
 // URL encoding so QR codes work across devices without backend
 export function encodeCardToUrl(card: CardData): string {
   // Try with full payload (including image)
