@@ -1,11 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { listCards, deleteCard, type CardData, SAMPLE_CARD, saveCard, newId, isRare } from "@/lib/cards";
-import { Plus, Trash2, Edit3, ExternalLink, Sparkles, Copy, QrCode, Layers, Heart } from "lucide-react";
+import { Plus, Trash2, Edit3, ExternalLink, Sparkles, Copy, QrCode, Layers, Heart, LogOut } from "lucide-react";
+import { AdminGate } from "@/components/AdminGate";
+import { logoutAdmin } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Painel — Cartas" }] }),
-  component: AdminPage,
+  component: () => (
+    <AdminGate>
+      <AdminPage />
+    </AdminGate>
+  ),
 });
 
 function AdminPage() {
@@ -56,6 +62,16 @@ function AdminPage() {
           >
             <Plus size={14} /> Nova carta
           </Link>
+          <button
+            onClick={() => {
+              logoutAdmin();
+              nav({ to: "/" });
+            }}
+            className="glass px-3 py-2 rounded-full text-sm inline-flex items-center gap-2"
+            title="Sair do painel"
+          >
+            <LogOut size={14} />
+          </button>
         </div>
       </header>
 
