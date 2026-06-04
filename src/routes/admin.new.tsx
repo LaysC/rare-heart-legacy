@@ -1,9 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CardEditor } from "@/components/CardEditor";
+import { AdminGate } from "@/components/AdminGate";
 
 export const Route = createFileRoute("/admin/new")({
   head: () => ({ meta: [{ title: "Nova carta" }] }),
-  component: NewCard,
+  component: () => (
+    <AdminGate>
+      <NewCard />
+    </AdminGate>
+  ),
 });
 
 function NewCard() {

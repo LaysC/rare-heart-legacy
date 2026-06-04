@@ -47,16 +47,20 @@ function ScanPage() {
     return () => clearInterval(t);
   }, [stage]);
 
-  // Sequenced stage transitions, kicked off after pack is opened
+  // Sequenced stage transitions — each stage schedules the next one.
+  // Chaining prevents the "infinite analysis" bug (when a single effect set
+  // multiple timers, switching stage cleared the remaining ones).
   useEffect(() => {
-    if (stage !== "opening") return;
-    const timers = [
-      setTimeout(() => setStage("boot"), 2600), // pack opening animation
-      setTimeout(() => setStage("scan"), 4400),
-      setTimeout(() => setStage("partial"), 10800),
-      setTimeout(() => setStage("reveal"), 13600),
-    ];
-    return () => timers.forEach(clearTimeout);
+    const next: Partial<Record<Stage, { to: Stage; ms: number }>> = {
+      opening: { to: "boot", ms: 2600 },
+      boot: { to: "scan", ms: 1600 },
+      scan: { to: "partial", ms: 6400 },
+      partial: { to: "reveal", ms: 2400 },
+    };
+    const step = next[stage];
+    if (!step) return;
+    const t = setTimeout(() => setStage(step.to), step.ms);
+    return () => clearTimeout(t);
   }, [stage]);
 
   if (loading) {

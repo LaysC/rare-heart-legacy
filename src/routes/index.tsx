@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Link } from "@tanstack/react-router";
 import { Heart, Sparkles, QrCode, Wand2 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -29,15 +28,9 @@ function Index() {
           inesquecível. Quando escaneada, a carta revela sua história.
         </p>
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
-          <Link
-            to="/admin"
-            className="bg-gradient-romance text-white px-6 py-3 rounded-full font-semibold inline-flex items-center gap-2 hover:scale-105 transition-transform shadow-glow"
-          >
-            <Wand2 size={18} /> Abrir Painel
-          </Link>
           <a
             href="#como-funciona"
-            className="glass px-6 py-3 rounded-full font-medium inline-flex items-center gap-2"
+            className="bg-gradient-romance text-white px-6 py-3 rounded-full font-semibold inline-flex items-center gap-2 hover:scale-105 transition-transform shadow-glow"
           >
             <Heart size={18} /> Como funciona
           </a>

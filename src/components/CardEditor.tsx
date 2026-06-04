@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { type CardData, type Rarity, type FrameStyle, saveCard, newId, SAMPLE_CARD } from "@/lib/cards";
+import { type CardData, type Rarity, type FrameStyle, saveCard, newId, BLANK_CARD } from "@/lib/cards";
 import { HoloCard } from "./HoloCard";
 import { useNavigate } from "@tanstack/react-router";
 import { Upload, Save, Trash2 } from "lucide-react";
@@ -17,7 +17,7 @@ export function CardEditor({ initial }: { initial?: CardData }) {
   const nav = useNavigate();
   const [card, setCard] = useState<CardData>(
     initial ?? {
-      ...SAMPLE_CARD,
+      ...BLANK_CARD,
       id: newId(),
       createdAt: new Date().toISOString(),
     }
