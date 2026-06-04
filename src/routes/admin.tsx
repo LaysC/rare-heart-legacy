@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { listCards, deleteCard, type CardData, SAMPLE_CARD, saveCard, newId, isRare } from "@/lib/cards";
 import { Plus, Trash2, Edit3, ExternalLink, Sparkles, Copy, QrCode, Layers, Heart, LogOut } from "lucide-react";
@@ -9,10 +9,18 @@ export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Painel — Cartas" }] }),
   component: () => (
     <AdminGate>
-      <AdminPage />
+      <AdminShell />
     </AdminGate>
   ),
 });
+
+function AdminShell() {
+  const isAdminHome = useRouterState({
+    select: (state) => state.location.pathname === "/admin" || state.location.pathname === "/admin/",
+  });
+
+  return isAdminHome ? <AdminPage /> : <Outlet />;
+}
 
 function AdminPage() {
   const [cards, setCards] = useState<CardData[]>([]);
