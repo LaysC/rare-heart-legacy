@@ -1,10 +1,12 @@
 import { createFileRoute, useParams, useSearch, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { getCard, decodeCardFromUrl, isRare, type CardData } from "@/lib/cards";
+import { resolveScannedCard, isRare, type CardData } from "@/lib/cards";
+import { getPublishedCard } from "@/lib/card-sync.functions";
 import { HoloCard } from "@/components/HoloCard";
 import { Heart, Sparkles, ChevronRight, Calendar, Gift } from "lucide-react";
 import { PackOpening } from "@/components/PackOpening";
+import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/scan/$id")({
   head: () => ({ meta: [{ title: "Análise da carta…" }] }),
@@ -27,19 +29,35 @@ const SCAN_MESSAGES = [
 function ScanPage() {
   const { id } = useParams({ from: "/scan/$id" });
   const { d } = useSearch({ from: "/scan/$id" });
+  const fetchPublishedCard = useServerFn(getPublishedCard);
   const [card, setCard] = useState<CardData | undefined>();
   const [stage, setStage] = useState<Stage>("pack");
   const [msgIdx, setMsgIdx] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1) try URL payload (works cross-device when scanned)
-    // 2) fall back to local storage (works on the device that created it)
-    const fromUrl = d ? decodeCardFromUrl(d) : undefined;
-    const fromLocal = getCard(id);
-    setCard(fromUrl ?? fromLocal);
-    setLoading(false);
-  }, [id, d]);
+    let alive = true;
+
+    async function loadCard() {
+      const fallback = resolveScannedCard(id, d);
+      if (fallback) setCard(fallback);
+
+      try {
+        const result = await fetchPublishedCard({ data: { id } });
+        if (alive && result.card) setCard(result.card);
+        else if (alive) setCard(fallback);
+      } catch {
+        if (alive) setCard(fallback);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    }
+
+    loadCard();
+    return () => {
+      alive = false;
+    };
+  }, [id, d, fetchPublishedCard]);
 
   useEffect(() => {
     if (stage !== "scan") return;
