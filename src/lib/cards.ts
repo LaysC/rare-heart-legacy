@@ -17,6 +17,8 @@ export interface CardData {
   secondaryColor?: string;
   frame?: FrameStyle;
   createdAt: string;
+  updatedAt?: string;
+  packageName?: string;
   footer?: string;
   gallery?: string[];
   timeline?: { date: string; title: string; text: string }[];
@@ -26,16 +28,31 @@ export interface CardData {
 
 const KEY = "lais-ex-cards-v1";
 
+export function normalizeCard(card: Partial<CardData>): CardData {
+  return {
+    ...BLANK_CARD,
+    ...card,
+    id: card.id || newId(),
+    hp: Number.isFinite(Number(card.hp)) ? Number(card.hp) : BLANK_CARD.hp,
+    rarity: (card.rarity as Rarity) || BLANK_CARD.rarity,
+    createdAt: card.createdAt || new Date().toISOString(),
+    updatedAt: card.updatedAt || card.createdAt || new Date().toISOString(),
+    gallery: Array.isArray(card.gallery) ? card.gallery : [],
+    timeline: Array.isArray(card.timeline) ? card.timeline : [],
+  };
+}
+
 function read(): CardData[] {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(localStorage.getItem(KEY) || "[]");
+    const parsed = JSON.parse(localStorage.getItem(KEY) || "[]");
+    return Array.isArray(parsed) ? parsed.map((card) => normalizeCard(card)) : [];
   } catch {
     return [];
   }
 }
 function write(cards: CardData[]) {
-  localStorage.setItem(KEY, JSON.stringify(cards));
+  localStorage.setItem(KEY, JSON.stringify(cards.map((card) => normalizeCard(card))));
 }
 
 export function listCards(): CardData[] {
@@ -45,11 +62,13 @@ export function getCard(id: string): CardData | undefined {
   return read().find((c) => c.id === id);
 }
 export function saveCard(card: CardData) {
+  const next = normalizeCard({ ...card, updatedAt: new Date().toISOString() });
   const all = read();
-  const i = all.findIndex((c) => c.id === card.id);
-  if (i >= 0) all[i] = card;
-  else all.unshift(card);
+  const i = all.findIndex((c) => c.id === next.id);
+  if (i >= 0) all[i] = next;
+  else all.unshift(next);
   write(all);
+  return next;
 }
 export function deleteCard(id: string) {
   write(read().filter((c) => c.id !== id));
@@ -75,6 +94,7 @@ export const SAMPLE_CARD: Omit<CardData, "id" | "createdAt"> = {
   primaryColor: "#ff4d6d",
   secondaryColor: "#a4508b",
   frame: "holo",
+  packageName: "Pacote Coração",
   footer: "Edição Coração — 1 de 1",
   gallery: [],
   timeline: [],
@@ -97,6 +117,7 @@ export const BLANK_CARD: Omit<CardData, "id" | "createdAt"> = {
   primaryColor: "#ff4d6d",
   secondaryColor: "#a4508b",
   frame: "holo",
+  packageName: "",
   footer: "",
   gallery: [],
   timeline: [],
@@ -126,10 +147,28 @@ export function decodeCardFromUrl(payload: string): CardData | undefined {
       typeof window === "undefined"
         ? Buffer.from(payload, "base64").toString()
         : decodeURIComponent(escape(atob(payload)));
-    return JSON.parse(json) as CardData;
+    return normalizeCard(JSON.parse(json) as CardData);
   } catch {
     return undefined;
   }
+}
+
+export function resolveScannedCard(id: string, payload?: string): CardData | undefined {
+  const fromUrl = payload ? decodeCardFromUrl(payload) : undefined;
+  const fromLocal = getCard(id);
+
+  if (!fromUrl) return fromLocal;
+  if (!fromLocal || fromLocal.id !== fromUrl.id) return fromUrl;
+
+  const localTime = new Date(fromLocal.updatedAt || fromLocal.createdAt).getTime();
+  const urlTime = new Date(fromUrl.updatedAt || fromUrl.createdAt).getTime();
+
+  if (localTime > urlTime) return fromLocal;
+  if (!fromUrl.imageDataUrl && fromLocal.imageDataUrl) {
+    return normalizeCard({ ...fromUrl, imageDataUrl: fromLocal.imageDataUrl });
+  }
+
+  return fromUrl;
 }
 
 export function isRare(rarity: Rarity) {
