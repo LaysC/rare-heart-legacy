@@ -127,18 +127,12 @@ export const BLANK_CARD: Omit<CardData, "id" | "createdAt"> = {
 
 // URL encoding so QR codes work across devices without backend
 export function encodeCardToUrl(card: CardData): string {
-  // Try with full payload (including image)
   const tryEncode = (c: CardData) => {
     const json = JSON.stringify(c);
     if (typeof window === "undefined") return Buffer.from(json).toString("base64");
     return btoa(unescape(encodeURIComponent(json)));
   };
-  let payload = tryEncode(card);
-  // QR codes start failing reliably around ~2000 chars. Strip image as fallback.
-  if (payload.length > 1800 && card.imageDataUrl) {
-    payload = tryEncode({ ...card, imageDataUrl: "" });
-  }
-  return payload;
+  return tryEncode(normalizeCard(card));
 }
 
 export function decodeCardFromUrl(payload: string): CardData | undefined {
