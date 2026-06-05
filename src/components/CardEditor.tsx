@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { type CardData, type Rarity, type FrameStyle, saveCard, newId, BLANK_CARD } from "@/lib/cards";
+import { publishCardSnapshot } from "@/lib/card-sync.functions";
 import { HoloCard } from "./HoloCard";
 import { useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Upload, Save, Trash2 } from "lucide-react";
 
 const RARITIES: Rarity[] = ["Comum", "Rara", "Ultra Rara", "Lendária", "Única"];
@@ -15,6 +17,7 @@ const FRAMES: { value: FrameStyle; label: string }[] = [
 
 export function CardEditor({ initial }: { initial?: CardData }) {
   const nav = useNavigate();
+  const publishCard = useServerFn(publishCardSnapshot);
   const [card, setCard] = useState<CardData>(
     initial ?? {
       ...BLANK_CARD,
@@ -22,6 +25,8 @@ export function CardEditor({ initial }: { initial?: CardData }) {
       createdAt: new Date().toISOString(),
     }
   );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (initial) setCard(initial);
@@ -31,17 +36,25 @@ export function CardEditor({ initial }: { initial?: CardData }) {
     setCard((p) => ({ ...p, [k]: v }));
   }
 
-  function onImage(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onImage(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => update("imageDataUrl", String(reader.result));
-    reader.readAsDataURL(f);
+    setError("");
+    update("imageDataUrl", await fileToDataUrl(f));
   }
 
-  function onSave() {
-    saveCard(card);
-    nav({ to: "/card/$id", params: { id: card.id } });
+  async function onSave() {
+    setSaving(true);
+    setError("");
+    const saved = saveCard(card);
+    try {
+      await publishCard({ data: saved });
+      nav({ to: "/card/$id", params: { id: saved.id } });
+    } catch {
+      setError("A carta foi salva neste dispositivo, mas não foi publicada para o QR Code. Tente salvar novamente.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -76,6 +89,9 @@ export function CardEditor({ initial }: { initial?: CardData }) {
           </Field>
           <Field label="Valor exibido">
             <input className={inp} value={card.displayValue} onChange={(e) => update("displayValue", e.target.value)} />
+          </Field>
+          <Field label="Pacote">
+            <input className={inp} value={card.packageName || ""} onChange={(e) => update("packageName", e.target.value)} />
           </Field>
         </Grid>
         <Field label="Descrição">
@@ -120,16 +136,18 @@ export function CardEditor({ initial }: { initial?: CardData }) {
             )}
           </div>
           <p className="text-[10px] text-muted-foreground mt-1">
-            Dica: imagens grandes serão omitidas do QR code para garantir leitura. Use até ~300KB.
+            A imagem aparece no preview, é salva com a carta e será carregada pelo QR Code.
           </p>
         </Field>
 
         <button
           onClick={onSave}
+          disabled={saving}
           className="mt-2 bg-gradient-romance text-white w-full py-3 rounded-full font-semibold inline-flex items-center justify-center gap-2 shadow-glow"
         >
-          <Save size={16} /> Salvar e gerar QR Code
+          <Save size={16} /> {saving ? "Salvando carta…" : "Salvar e gerar QR Code"}
         </button>
+        {error && <p className="text-sm text-rose-200 text-center">{error}</p>}
       </div>
 
       <div className="sticky top-6 flex flex-col items-center gap-3">
@@ -138,6 +156,33 @@ export function CardEditor({ initial }: { initial?: CardData }) {
       </div>
     </div>
   );
+}
+
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const maxSide = 1200;
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(String(reader.result));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.88));
+      };
+      img.onerror = () => resolve(String(reader.result));
+      img.src = String(reader.result);
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
 }
 
 const inp = "w-full px-3 py-2 rounded-lg bg-input/60 border border-border text-sm outline-none focus:border-rose-400";
