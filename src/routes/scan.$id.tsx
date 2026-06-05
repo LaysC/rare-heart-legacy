@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { resolveScannedCard, isRare, type CardData } from "@/lib/cards";
 import { getPackageCards } from "@/lib/card-sync.functions";
 import { HoloCard } from "@/components/HoloCard";
-import { Heart, Sparkles, ChevronRight, Download, Check } from "lucide-react";
+import { Heart, Sparkles, ChevronRight, Calendar, Download, Check } from "lucide-react";
 import { PackOpening } from "@/components/PackOpening";
 import { useServerFn } from "@tanstack/react-start";
 
@@ -244,28 +244,17 @@ function ScanPage() {
 
         {stage === "reveal" && (
           <motion.div
-            key="reveal"
+            key={`reveal-${activeIdx}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center flex flex-col items-center"
           >
-            <motion.div
-              initial={{ scale: 0.6, rotateY: -90, opacity: 0 }}
-              animate={{
-                scale: 1,
-                rotateY: isRare(card.rarity) ? [0, 8, -8, 6, -6, 0] : 0,
-                opacity: 1,
-              }}
-              transition={{
-                scale: { type: "spring", stiffness: 80, damping: 14 },
-                rotateY: isRare(card.rarity)
-                  ? { duration: 6, repeat: Infinity, ease: "easeInOut" }
-                  : undefined,
-              }}
-              style={{ transformStyle: "preserve-3d", perspective: 1000 }}
-            >
-              <HoloCard card={card} />
-            </motion.div>
+            {cards.length > 1 && (
+              <p className="text-[11px] uppercase tracking-[0.3em] text-rose-200/80 mb-3">
+                Carta {activeIdx + 1} de {cards.length}
+              </p>
+            )}
+            <SaveableCard card={card} />
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -276,10 +265,10 @@ function ScanPage() {
               <p className="text-3xl font-extrabold text-gradient-romance mt-1">{card.displayValue}</p>
               <p className="mt-4 text-sm italic text-rose-100/90">"{card.secretMessage}"</p>
               <button
-                onClick={() => setStage("final")}
+                onClick={nextCard}
                 className="mt-6 bg-gradient-romance text-white px-6 py-3 rounded-full font-semibold inline-flex items-center gap-2 shadow-glow hover:scale-105 transition-transform"
               >
-                Acessar Relatório Completo <ChevronRight size={16} />
+                {isLast ? "Ver mensagem final" : "Próxima carta"} <ChevronRight size={16} />
               </button>
             </motion.div>
           </motion.div>
