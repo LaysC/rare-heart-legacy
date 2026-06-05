@@ -1,8 +1,10 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { getCard, encodeCardToUrl, type CardData } from "@/lib/cards";
+import { getCard, type CardData } from "@/lib/cards";
+import { publishCardSnapshot } from "@/lib/card-sync.functions";
 import { HoloCard } from "@/components/HoloCard";
 import { Printer, ArrowLeft, QrCode, Copy, Check } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/card/$id")({
   head: () => ({ meta: [{ title: "Carta" }] }),
@@ -11,6 +13,7 @@ export const Route = createFileRoute("/card/$id")({
 
 function CardView() {
   const { id } = useParams({ from: "/card/$id" });
+  const publishCard = useServerFn(publishCardSnapshot);
   const [card, setCard] = useState<CardData | undefined>();
   const [qr, setQr] = useState<string>("");
   const [scanUrl, setScanUrl] = useState("");
@@ -20,8 +23,8 @@ function CardView() {
     const c = getCard(id);
     setCard(c);
     if (typeof window === "undefined" || !c) return;
-    const payload = encodeCardToUrl(c);
-    const url = `${window.location.origin}/scan/${id}?d=${payload}`;
+    publishCard({ data: c }).catch(() => undefined);
+    const url = `${window.location.origin}/scan/${id}`;
     setScanUrl(url);
     import("qrcode").then(({ default: QRCode }) =>
       QRCode.toDataURL(url, {
@@ -86,7 +89,7 @@ function CardView() {
             Aponte a câmera para revelar a carta.
           </p>
           <p className="mt-2 text-[10px] text-muted-foreground">
-            O QR contém a carta completa — funciona em qualquer celular.
+            O QR abre a versão salva mais recente da carta, incluindo imagem e campos editados.
           </p>
         </div>
       </div>
