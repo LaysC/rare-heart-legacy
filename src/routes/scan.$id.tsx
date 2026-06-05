@@ -1,10 +1,10 @@
 import { createFileRoute, useParams, useSearch, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { resolveScannedCard, isRare, type CardData } from "@/lib/cards";
-import { getPublishedCard } from "@/lib/card-sync.functions";
+import { getPackageCards } from "@/lib/card-sync.functions";
 import { HoloCard } from "@/components/HoloCard";
-import { Heart, Sparkles, ChevronRight, Calendar, Gift } from "lucide-react";
+import { Heart, Sparkles, ChevronRight, Calendar, Download, Check } from "lucide-react";
 import { PackOpening } from "@/components/PackOpening";
 import { useServerFn } from "@tanstack/react-start";
 
@@ -29,25 +29,29 @@ const SCAN_MESSAGES = [
 function ScanPage() {
   const { id } = useParams({ from: "/scan/$id" });
   const { d } = useSearch({ from: "/scan/$id" });
-  const fetchPublishedCard = useServerFn(getPublishedCard);
-  const [card, setCard] = useState<CardData | undefined>();
+  const fetchPackage = useServerFn(getPackageCards);
+  const [cards, setCards] = useState<CardData[]>([]);
+  const [activeIdx, setActiveIdx] = useState(0);
   const [stage, setStage] = useState<Stage>("pack");
   const [msgIdx, setMsgIdx] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const card = cards[activeIdx];
+  const isLast = activeIdx >= cards.length - 1;
 
   useEffect(() => {
     let alive = true;
 
     async function loadCard() {
       const fallback = resolveScannedCard(id, d);
-      if (fallback) setCard(fallback);
+      if (fallback) setCards([fallback]);
 
       try {
-        const result = await fetchPublishedCard({ data: { id } });
-        if (alive && result.card) setCard(result.card);
-        else if (alive) setCard(fallback);
+        const result = await fetchPackage({ data: { id } });
+        if (alive && result.cards && result.cards.length > 0) setCards(result.cards);
+        else if (alive && fallback) setCards([fallback]);
       } catch {
-        if (alive) setCard(fallback);
+        if (alive && fallback) setCards([fallback]);
       } finally {
         if (alive) setLoading(false);
       }
@@ -57,7 +61,7 @@ function ScanPage() {
     return () => {
       alive = false;
     };
-  }, [id, d, fetchPublishedCard]);
+  }, [id, d, fetchPackage]);
 
   useEffect(() => {
     if (stage !== "scan") return;
@@ -98,6 +102,15 @@ function ScanPage() {
         </div>
       </main>
     );
+  }
+
+  function nextCard() {
+    if (isLast) {
+      setStage("final");
+    } else {
+      setActiveIdx((i) => i + 1);
+      setStage("reveal");
+    }
   }
 
   return (
@@ -231,28 +244,17 @@ function ScanPage() {
 
         {stage === "reveal" && (
           <motion.div
-            key="reveal"
+            key={`reveal-${activeIdx}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center flex flex-col items-center"
           >
-            <motion.div
-              initial={{ scale: 0.6, rotateY: -90, opacity: 0 }}
-              animate={{
-                scale: 1,
-                rotateY: isRare(card.rarity) ? [0, 8, -8, 6, -6, 0] : 0,
-                opacity: 1,
-              }}
-              transition={{
-                scale: { type: "spring", stiffness: 80, damping: 14 },
-                rotateY: isRare(card.rarity)
-                  ? { duration: 6, repeat: Infinity, ease: "easeInOut" }
-                  : undefined,
-              }}
-              style={{ transformStyle: "preserve-3d", perspective: 1000 }}
-            >
-              <HoloCard card={card} />
-            </motion.div>
+            {cards.length > 1 && (
+              <p className="text-[11px] uppercase tracking-[0.3em] text-rose-200/80 mb-3">
+                Carta {activeIdx + 1} de {cards.length}
+              </p>
+            )}
+            <SaveableCard card={card} />
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -263,10 +265,10 @@ function ScanPage() {
               <p className="text-3xl font-extrabold text-gradient-romance mt-1">{card.displayValue}</p>
               <p className="mt-4 text-sm italic text-rose-100/90">"{card.secretMessage}"</p>
               <button
-                onClick={() => setStage("final")}
+                onClick={nextCard}
                 className="mt-6 bg-gradient-romance text-white px-6 py-3 rounded-full font-semibold inline-flex items-center gap-2 shadow-glow hover:scale-105 transition-transform"
               >
-                Acessar Relatório Completo <ChevronRight size={16} />
+                {isLast ? "Ver mensagem final" : "Próxima carta"} <ChevronRight size={16} />
               </button>
             </motion.div>
           </motion.div>
@@ -282,31 +284,46 @@ function ScanPage() {
             <div className="text-center mb-8">
               <Heart className="mx-auto text-rose-300 mb-3" size={32} />
               <h2 className="text-3xl sm:text-4xl font-bold text-gradient-romance">
-                Relatório Completo
+                {cards.length > 1 ? "Você descobriu toda a coleção" : "Sua carta"}
               </h2>
               <p className="text-muted-foreground text-sm mt-2">
-                Carta {card.name} · {card.rarity}
+                {cards.length > 1
+                  ? `${cards.length} cartas reveladas ❤️`
+                  : `${card.name} · ${card.rarity}`}
               </p>
             </div>
 
-            {card.romanticText && (
-              <div className="glass rounded-2xl p-6 mb-4">
-                <p className="leading-relaxed">{card.romanticText}</p>
+            {cards.length > 1 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                {cards.map((c, i) => (
+                  <div key={c.id} className="glass rounded-2xl p-3 flex flex-col items-center gap-2">
+                    <SaveableCard card={c} compact />
+                    <p className="text-[11px] text-center text-muted-foreground truncate w-full">
+                      {i + 1}. {c.name}
+                    </p>
+                  </div>
+                ))}
               </div>
             )}
 
-            {card.gallery && card.gallery.length > 0 && (
+            {cards[0].romanticText && (
+              <div className="glass rounded-2xl p-6 mb-4">
+                <p className="leading-relaxed">{cards[0].romanticText}</p>
+              </div>
+            )}
+
+            {cards[0].gallery && cards[0].gallery.length > 0 && (
               <div className="grid grid-cols-3 gap-2 mb-4">
-                {card.gallery.map((g, i) => (
+                {cards[0].gallery.map((g, i) => (
                   <img key={i} src={g} alt="" className="aspect-square object-cover rounded-xl" />
                 ))}
               </div>
             )}
 
-            {card.timeline && card.timeline.length > 0 && (
+            {cards[0].timeline && cards[0].timeline.length > 0 && (
               <div className="glass rounded-2xl p-6 mb-4 space-y-4">
                 <h3 className="font-semibold flex items-center gap-2"><Calendar size={16} /> Linha do tempo</h3>
-                {card.timeline.map((t, i) => (
+                {cards[0].timeline.map((t, i) => (
                   <div key={i} className="border-l-2 border-rose-400/40 pl-4">
                     <p className="text-xs text-muted-foreground">{t.date}</p>
                     <p className="font-semibold">{t.title}</p>
@@ -316,10 +333,12 @@ function ScanPage() {
               </div>
             )}
 
-            {card.finalMessage && (
+            {(cards[cards.length - 1].finalMessage || cards[0].finalMessage) && (
               <div className="glass rounded-2xl p-8 text-center shadow-glow">
                 <Sparkles className="mx-auto text-amber-300 mb-3" />
-                <p className="text-lg italic">{card.finalMessage}</p>
+                <p className="text-lg italic">
+                  {cards[cards.length - 1].finalMessage || cards[0].finalMessage}
+                </p>
               </div>
             )}
 
@@ -330,5 +349,69 @@ function ScanPage() {
         )}
       </AnimatePresence>
     </main>
+  );
+}
+
+function SaveableCard({ card, compact = false }: { card: CardData; compact?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function onSave() {
+    if (!ref.current || busy) return;
+    setBusy(true);
+    try {
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(ref.current, {
+        pixelRatio: 3,
+        cacheBust: true,
+        backgroundColor: "transparent",
+      });
+      const a = document.createElement("a");
+      const safeName = (card.name || "carta").replace(/[^a-z0-9\-_]+/gi, "_").toLowerCase();
+      a.href = dataUrl;
+      a.download = `${safeName}.png`;
+      a.click();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      console.error("Falha ao salvar carta", err);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <motion.div
+        initial={{ scale: 0.6, rotateY: -90, opacity: 0 }}
+        animate={{
+          scale: 1,
+          rotateY: !compact && isRare(card.rarity) ? [0, 8, -8, 6, -6, 0] : 0,
+          opacity: 1,
+        }}
+        transition={{
+          scale: { type: "spring", stiffness: 80, damping: 14 },
+          rotateY:
+            !compact && isRare(card.rarity)
+              ? { duration: 6, repeat: Infinity, ease: "easeInOut" }
+              : undefined,
+        }}
+        style={{ transformStyle: "preserve-3d", perspective: 1000 }}
+      >
+        <div ref={ref} style={compact ? { transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 } : undefined}>
+          <HoloCard card={card} />
+        </div>
+      </motion.div>
+      <button
+        type="button"
+        onClick={onSave}
+        disabled={busy}
+        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors"
+      >
+        {saved ? <Check size={12} /> : <Download size={12} />}
+        {saved ? "Salva!" : busy ? "Salvando…" : "Salvar carta"}
+      </button>
+    </div>
   );
 }

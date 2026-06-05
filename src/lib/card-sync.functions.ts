@@ -41,3 +41,20 @@ export const getPublishedCard = createServerFn({ method: "GET" })
     const { fetchCardSnapshot } = await import("./card-sync.server");
     return { card: await fetchCardSnapshot(data.id) };
   });
+
+export const getPackageCards = createServerFn({ method: "GET" })
+  .inputValidator((input) =>
+    z.object({ id: z.string().min(1).max(80) }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { fetchCardSnapshot, fetchCardsByPackage } = await import("./card-sync.server");
+    const card = await fetchCardSnapshot(data.id);
+    if (!card) return { cards: [] };
+    const pkg = (card.packageName || "").trim();
+    if (!pkg) return { cards: [card] };
+    const siblings = await fetchCardsByPackage(pkg);
+    // Ensure the scanned card is first; dedupe by id.
+    const all = [card, ...siblings.filter((c) => c.id !== card.id)];
+    const seen = new Set<string>();
+    return { cards: all.filter((c) => (seen.has(c.id) ? false : (seen.add(c.id), true))) };
+  });

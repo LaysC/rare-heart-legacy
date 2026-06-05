@@ -27,3 +27,19 @@ export async function fetchCardSnapshot(id: string) {
 
   return normalizeCard(data.card_data as Partial<CardData>);
 }
+
+export async function fetchCardsByPackage(packageName: string) {
+  const { data, error } = await (supabaseAdmin as any)
+    .from(TABLE)
+    .select("card_data")
+    .eq("card_data->>packageName", packageName);
+
+  if (error) throw new Error(error.message || "Não foi possível carregar o pacote.");
+  if (!Array.isArray(data)) return [];
+  return data
+    .map((row: any) => normalizeCard(row.card_data as Partial<CardData>))
+    .sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+}

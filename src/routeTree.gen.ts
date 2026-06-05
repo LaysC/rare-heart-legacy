@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ScannerRouteImport } from './routes/scanner'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ScanIdRouteImport } from './routes/scan.$id'
@@ -16,6 +17,11 @@ import { Route as CardIdRouteImport } from './routes/card.$id'
 import { Route as AdminNewRouteImport } from './routes/admin.new'
 import { Route as AdminEditIdRouteImport } from './routes/admin.edit.$id'
 
+const ScannerRoute = ScannerRouteImport.update({
+  id: '/scanner',
+  path: '/scanner',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -50,6 +56,7 @@ const AdminEditIdRoute = AdminEditIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/scanner': typeof ScannerRoute
   '/admin/new': typeof AdminNewRoute
   '/card/$id': typeof CardIdRoute
   '/scan/$id': typeof ScanIdRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/scanner': typeof ScannerRoute
   '/admin/new': typeof AdminNewRoute
   '/card/$id': typeof CardIdRoute
   '/scan/$id': typeof ScanIdRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/scanner': typeof ScannerRoute
   '/admin/new': typeof AdminNewRoute
   '/card/$id': typeof CardIdRoute
   '/scan/$id': typeof ScanIdRoute
@@ -77,6 +86,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/scanner'
     | '/admin/new'
     | '/card/$id'
     | '/scan/$id'
@@ -85,6 +95,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/scanner'
     | '/admin/new'
     | '/card/$id'
     | '/scan/$id'
@@ -93,6 +104,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/scanner'
     | '/admin/new'
     | '/card/$id'
     | '/scan/$id'
@@ -102,12 +114,20 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  ScannerRoute: typeof ScannerRoute
   CardIdRoute: typeof CardIdRoute
   ScanIdRoute: typeof ScanIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/scanner': {
+      id: '/scanner'
+      path: '/scanner'
+      fullPath: '/scanner'
+      preLoaderRoute: typeof ScannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -168,19 +188,10 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  ScannerRoute: ScannerRoute,
   CardIdRoute: CardIdRoute,
   ScanIdRoute: ScanIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
