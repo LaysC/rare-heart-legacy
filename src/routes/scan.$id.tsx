@@ -1,10 +1,10 @@
 import { createFileRoute, useParams, useSearch, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { resolveScannedCard, isRare, type CardData } from "@/lib/cards";
-import { getPublishedCard } from "@/lib/card-sync.functions";
+import { getPackageCards } from "@/lib/card-sync.functions";
 import { HoloCard } from "@/components/HoloCard";
-import { Heart, Sparkles, ChevronRight, Calendar, Gift } from "lucide-react";
+import { Heart, Sparkles, ChevronRight, Download, Check } from "lucide-react";
 import { PackOpening } from "@/components/PackOpening";
 import { useServerFn } from "@tanstack/react-start";
 
@@ -29,25 +29,29 @@ const SCAN_MESSAGES = [
 function ScanPage() {
   const { id } = useParams({ from: "/scan/$id" });
   const { d } = useSearch({ from: "/scan/$id" });
-  const fetchPublishedCard = useServerFn(getPublishedCard);
-  const [card, setCard] = useState<CardData | undefined>();
+  const fetchPackage = useServerFn(getPackageCards);
+  const [cards, setCards] = useState<CardData[]>([]);
+  const [activeIdx, setActiveIdx] = useState(0);
   const [stage, setStage] = useState<Stage>("pack");
   const [msgIdx, setMsgIdx] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const card = cards[activeIdx];
+  const isLast = activeIdx >= cards.length - 1;
 
   useEffect(() => {
     let alive = true;
 
     async function loadCard() {
       const fallback = resolveScannedCard(id, d);
-      if (fallback) setCard(fallback);
+      if (fallback) setCards([fallback]);
 
       try {
-        const result = await fetchPublishedCard({ data: { id } });
-        if (alive && result.card) setCard(result.card);
-        else if (alive) setCard(fallback);
+        const result = await fetchPackage({ data: { id } });
+        if (alive && result.cards && result.cards.length > 0) setCards(result.cards);
+        else if (alive && fallback) setCards([fallback]);
       } catch {
-        if (alive) setCard(fallback);
+        if (alive && fallback) setCards([fallback]);
       } finally {
         if (alive) setLoading(false);
       }
@@ -57,7 +61,7 @@ function ScanPage() {
     return () => {
       alive = false;
     };
-  }, [id, d, fetchPublishedCard]);
+  }, [id, d, fetchPackage]);
 
   useEffect(() => {
     if (stage !== "scan") return;
@@ -98,6 +102,15 @@ function ScanPage() {
         </div>
       </main>
     );
+  }
+
+  function nextCard() {
+    if (isLast) {
+      setStage("final");
+    } else {
+      setActiveIdx((i) => i + 1);
+      setStage("reveal");
+    }
   }
 
   return (
