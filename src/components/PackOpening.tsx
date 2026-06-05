@@ -73,7 +73,9 @@ export function PackOpening({ card, onOpen }: { card: CardData; onOpen: () => vo
         <div className="absolute top-12 left-0 right-0 border-t border-dashed border-white/40" />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
           <Gift size={56} className="drop-shadow-lg" />
-          <p className="mt-4 text-[10px] tracking-[0.3em] uppercase opacity-80">Edição Coração</p>
+          <p className="mt-4 text-[10px] tracking-[0.3em] uppercase opacity-80">
+            {card.packageName || "Edição Coração"}
+          </p>
           <p className="text-lg font-bold mt-1">1 / 1</p>
           <div className="absolute bottom-6 flex items-center gap-1 text-[10px] opacity-70">
             <Sparkles size={10} /> selado especialmente para você
