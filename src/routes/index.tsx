@@ -69,7 +69,7 @@ function Index() {
 
         <div className="mt-8 flex flex-col items-center gap-3">
           <Link
-            to="/scan"
+            to="/scanner"
             className="bg-gradient-romance text-white px-8 py-4 rounded-full font-semibold inline-flex items-center gap-2 hover:scale-105 transition-transform shadow-glow text-base"
           >
             <QrCode size={20} /> Escanear QR Code
