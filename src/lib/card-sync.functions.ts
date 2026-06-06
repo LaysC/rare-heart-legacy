@@ -35,14 +35,14 @@ export const publishCardSnapshot = createServerFn({ method: "POST" })
     return { card: await upsertCardSnapshot(card) };
   });
 
-export const getPublishedCard = createServerFn({ method: "GET" })
+export const getPublishedCard = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ id: z.string().min(1).max(80) }).parse(input))
   .handler(async ({ data }) => {
     const { fetchCardSnapshot } = await import("./card-sync.server");
     return { card: await fetchCardSnapshot(data.id) };
   });
 
-export const getPackageCards = createServerFn({ method: "GET" })
+export const getPackageCards = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z.object({ id: z.string().min(1).max(80) }).parse(input),
   )
