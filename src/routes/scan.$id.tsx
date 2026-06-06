@@ -10,9 +10,6 @@ import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/scan/$id")({
   head: () => ({ meta: [{ title: "Análise da carta…" }] }),
-  validateSearch: (search: Record<string, unknown>) => ({
-    d: typeof search.d === "string" ? search.d : undefined,
-  }),
   component: ScanPage,
 });
 
