@@ -74,6 +74,21 @@ export function deleteCard(id: string) {
   write(read().filter((c) => c.id !== id));
 }
 
+export function replaceCards(cards: CardData[]) {
+  write(cards);
+}
+
+export function removeCardReferences(id: string) {
+  deleteCard(id);
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.removeItem(`scan-${id}`);
+    sessionStorage.removeItem(`card-${id}`);
+    localStorage.removeItem(`scan-${id}`);
+    localStorage.removeItem(`card-${id}`);
+  } catch {}
+}
+
 export function newId() {
   return Math.random().toString(36).slice(2, 10);
 }
@@ -125,7 +140,6 @@ export const BLANK_CARD: Omit<CardData, "id" | "createdAt"> = {
   finalMessage: "",
 };
 
-// URL encoding so QR codes work across devices without backend
 export function encodeCardToUrl(card: CardData): string {
   const tryEncode = (c: CardData) => {
     const json = JSON.stringify(c);
