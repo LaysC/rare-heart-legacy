@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { listCards, removeCardReferences, type CardData, SAMPLE_CARD, saveCard, newId, isRare } from "@/lib/cards";
 import { deletePublishedCard, prunePublishedCards } from "@/lib/card-sync.functions";
 import { useServerFn } from "@tanstack/react-start";
@@ -31,8 +31,11 @@ function AdminPage() {
   const nav = useNavigate();
   const removeRemote = useServerFn(deletePublishedCard);
   const pruneRemote = useServerFn(prunePublishedCards);
+  const syncedOnOpen = useRef(false);
 
   useEffect(() => {
+    if (syncedOnOpen.current) return;
+    syncedOnOpen.current = true;
     const current = listCards();
     setCards(current);
     pruneRemote({ data: { activeIds: current.map((card) => card.id) } }).catch((err) => {
@@ -54,7 +57,10 @@ function AdminPage() {
       removeCardReferences(c.id);
       const current = listCards();
       setCards(current);
-      await pruneRemote({ data: { activeIds: current.map((card) => card.id) } });
+      pruneRemote({ data: { activeIds: current.map((card) => card.id) } }).catch((err) => {
+        console.error("Falha ao limpar referências antigas", err);
+        setSyncError("A carta foi apagada, mas a limpeza completa das referências antigas falhou. Recarregue o painel.");
+      });
     } catch (err) {
       console.error("Falha ao excluir carta", err);
       setSyncError("A exclusão não foi concluída. A carta não foi removida para evitar que o QR continue apontando para dados antigos.");
