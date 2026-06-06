@@ -74,3 +74,10 @@ export const prunePublishedCards = createServerFn({ method: "POST" })
     const { pruneCardSnapshots } = await import("./card-sync.server");
     return pruneCardSnapshots(data.activeIds);
   });
+
+export const syncPublishedCards = createServerFn({ method: "POST" })
+  .inputValidator((input) => z.object({ cards: z.array(CardInput).max(1000) }).parse(input))
+  .handler(async ({ data }) => {
+    const { syncCardSnapshots } = await import("./card-sync.server");
+    return syncCardSnapshots(data.cards.map((card) => normalizeCard(card as Partial<CardData>)));
+  });
