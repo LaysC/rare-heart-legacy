@@ -417,16 +417,32 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
         style={{ transformStyle: "preserve-3d", perspective: 1000 }}
       >
         {compact ? (
-          <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }}>
-            <HoloCard card={card} />
-          </div>
+          <>
+            <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }}>
+              <HoloCard card={card} />
+            </div>
+            <div
+              ref={ref}
+              aria-hidden
+              style={{
+                position: "fixed",
+                top: 0,
+                left: -99999,
+                pointerEvents: "none",
+                display: "inline-block",
+                padding: 4,
+              }}
+            >
+              <HoloCard card={card} />
+            </div>
+          </>
         ) : (
           <div ref={ref} style={{ display: "inline-block", padding: 4 }}>
             <HoloCard card={card} />
           </div>
         )}
       </motion.div>
-      <button
+      {!compact && <button
         type="button"
         onClick={onSave}
         disabled={busy}
@@ -434,7 +450,7 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
       >
         {saved ? <Check size={12} /> : <Download size={12} />}
         {saved ? "Salva!" : busy ? "Salvando…" : "Salvar carta"}
-      </button>
+      </button>}
     </div>
   );
 }
