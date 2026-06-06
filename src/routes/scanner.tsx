@@ -20,8 +20,7 @@ function ScannerPage() {
       // Same-origin /scan/:id (with optional ?d=)
       if (url.pathname.startsWith("/scan/")) {
         const id = url.pathname.split("/")[2];
-        const d = url.searchParams.get("d") || undefined;
-        nav({ to: "/scan/$id", params: { id }, search: { d } });
+        nav({ to: "/scan/$id", params: { id } });
         return;
       }
       // Fallback: navigate to the URL directly
