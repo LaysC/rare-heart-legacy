@@ -15,6 +15,25 @@ export async function upsertCardSnapshot(card: CardData) {
   return normalized;
 }
 
+export async function syncCardSnapshots(cards: CardData[]) {
+  const normalized = cards.map((card) => normalizeCard(card));
+
+  if (normalized.length > 0) {
+    const { error } = await (supabaseAdmin as any).from(TABLE).upsert(
+      normalized.map((card) => ({
+        id: card.id,
+        card_data: card,
+        updated_at: card.updatedAt || new Date().toISOString(),
+      })),
+    );
+
+    if (error) throw new Error(error.message || "Não foi possível sincronizar as cartas.");
+  }
+
+  const pruned = await pruneCardSnapshots(normalized.map((card) => card.id));
+  return { ok: true, cards: normalized, removed: pruned.removed };
+}
+
 export async function fetchCardSnapshot(id: string) {
   const { data, error } = await (supabaseAdmin as any)
     .from(TABLE)
