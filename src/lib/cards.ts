@@ -74,6 +74,21 @@ export function deleteCard(id: string) {
   write(read().filter((c) => c.id !== id));
 }
 
+export function replaceCards(cards: CardData[]) {
+  write(cards);
+}
+
+export function removeCardReferences(id: string) {
+  deleteCard(id);
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.removeItem(`scan-${id}`);
+    sessionStorage.removeItem(`card-${id}`);
+    localStorage.removeItem(`scan-${id}`);
+    localStorage.removeItem(`card-${id}`);
+  } catch {}
+}
+
 export function newId() {
   return Math.random().toString(36).slice(2, 10);
 }
@@ -124,46 +139,6 @@ export const BLANK_CARD: Omit<CardData, "id" | "createdAt"> = {
   romanticText: "",
   finalMessage: "",
 };
-
-// URL encoding so QR codes work across devices without backend
-export function encodeCardToUrl(card: CardData): string {
-  const tryEncode = (c: CardData) => {
-    const json = JSON.stringify(c);
-    if (typeof window === "undefined") return Buffer.from(json).toString("base64");
-    return btoa(unescape(encodeURIComponent(json)));
-  };
-  return tryEncode(normalizeCard(card));
-}
-
-export function decodeCardFromUrl(payload: string): CardData | undefined {
-  try {
-    const json =
-      typeof window === "undefined"
-        ? Buffer.from(payload, "base64").toString()
-        : decodeURIComponent(escape(atob(payload)));
-    return normalizeCard(JSON.parse(json) as CardData);
-  } catch {
-    return undefined;
-  }
-}
-
-export function resolveScannedCard(id: string, payload?: string): CardData | undefined {
-  const fromUrl = payload ? decodeCardFromUrl(payload) : undefined;
-  const fromLocal = getCard(id);
-
-  if (!fromUrl) return fromLocal;
-  if (!fromLocal || fromLocal.id !== fromUrl.id) return fromUrl;
-
-  const localTime = new Date(fromLocal.updatedAt || fromLocal.createdAt).getTime();
-  const urlTime = new Date(fromUrl.updatedAt || fromUrl.createdAt).getTime();
-
-  if (localTime > urlTime) return fromLocal;
-  if (!fromUrl.imageDataUrl && fromLocal.imageDataUrl) {
-    return normalizeCard({ ...fromUrl, imageDataUrl: fromLocal.imageDataUrl });
-  }
-
-  return fromUrl;
-}
 
 export function isRare(rarity: Rarity) {
   return rarity === "Lendária" || rarity === "Ultra Rara" || rarity === "Única";

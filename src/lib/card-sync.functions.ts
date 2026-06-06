@@ -35,14 +35,14 @@ export const publishCardSnapshot = createServerFn({ method: "POST" })
     return { card: await upsertCardSnapshot(card) };
   });
 
-export const getPublishedCard = createServerFn({ method: "GET" })
+export const getPublishedCard = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ id: z.string().min(1).max(80) }).parse(input))
   .handler(async ({ data }) => {
     const { fetchCardSnapshot } = await import("./card-sync.server");
     return { card: await fetchCardSnapshot(data.id) };
   });
 
-export const getPackageCards = createServerFn({ method: "GET" })
+export const getPackageCards = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z.object({ id: z.string().min(1).max(80) }).parse(input),
   )
@@ -64,4 +64,20 @@ export const deletePublishedCard = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { deleteCardSnapshot } = await import("./card-sync.server");
     return deleteCardSnapshot(data.id);
+  });
+
+export const prunePublishedCards = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z.object({ activeIds: z.array(z.string().min(1).max(80)).max(1000) }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { pruneCardSnapshots } = await import("./card-sync.server");
+    return pruneCardSnapshots(data.activeIds);
+  });
+
+export const syncPublishedCards = createServerFn({ method: "POST" })
+  .inputValidator((input) => z.object({ cards: z.array(CardInput).max(1000) }).parse(input))
+  .handler(async ({ data }) => {
+    const { syncCardSnapshots } = await import("./card-sync.server");
+    return syncCardSnapshots(data.cards.map((card) => normalizeCard(card as Partial<CardData>)));
   });

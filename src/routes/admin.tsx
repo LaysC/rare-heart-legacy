@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { listCards, deleteCard, type CardData, SAMPLE_CARD, saveCard, newId, isRare } from "@/lib/cards";
-import { deletePublishedCard } from "@/lib/card-sync.functions";
+import { useEffect, useRef, useState } from "react";
+import { listCards, removeCardReferences, type CardData, SAMPLE_CARD, saveCard, newId, isRare } from "@/lib/cards";
+import { deletePublishedCard, syncPublishedCards } from "@/lib/card-sync.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { Plus, Trash2, Edit3, ExternalLink, Sparkles, Copy, QrCode, Layers, Heart, LogOut } from "lucide-react";
 import { AdminGate } from "@/components/AdminGate";
@@ -26,13 +26,47 @@ function AdminShell() {
 
 function AdminPage() {
   const [cards, setCards] = useState<CardData[]>([]);
+  const [deletingId, setDeletingId] = useState("");
+  const [syncError, setSyncError] = useState("");
   const nav = useNavigate();
   const removeRemote = useServerFn(deletePublishedCard);
+  const syncRemote = useServerFn(syncPublishedCards);
+  const syncedOnOpen = useRef(false);
 
-  useEffect(() => setCards(listCards()), []);
+  useEffect(() => {
+    if (syncedOnOpen.current) return;
+    syncedOnOpen.current = true;
+    const current = listCards();
+    setCards(current);
+    syncRemote({ data: { cards: current } }).catch((err) => {
+      console.error("Falha ao sincronizar cartas publicadas", err);
+      setSyncError("Não foi possível limpar cartas antigas publicadas. Tente recarregar o painel.");
+    });
+  }, [syncRemote]);
 
   function refresh() {
     setCards(listCards());
+  }
+
+  async function removeCard(c: CardData) {
+    if (!confirm("Apagar carta definitivamente?")) return;
+    setDeletingId(c.id);
+    setSyncError("");
+    try {
+      await removeRemote({ data: { id: c.id } });
+      removeCardReferences(c.id);
+      const current = listCards();
+      setCards(current);
+      syncRemote({ data: { cards: current } }).catch((err) => {
+        console.error("Falha ao limpar referências antigas", err);
+        setSyncError("A carta foi apagada, mas a limpeza completa das referências antigas falhou. Recarregue o painel.");
+      });
+    } catch (err) {
+      console.error("Falha ao excluir carta", err);
+      setSyncError("A exclusão não foi concluída. A carta não foi removida para evitar que o QR continue apontando para dados antigos.");
+    } finally {
+      setDeletingId("");
+    }
   }
 
   function seedSample() {
@@ -107,6 +141,8 @@ function AdminPage() {
         </div>
       )}
 
+      {syncError && <p className="mb-4 text-sm text-rose-200">{syncError}</p>}
+
       {cards.length === 0 ? (
         <div className="glass rounded-2xl p-12 text-center">
           <p className="text-muted-foreground mb-4">Nenhuma carta criada ainda.</p>
@@ -156,18 +192,11 @@ function AdminPage() {
                   <Copy size={12} /> Duplicar
                 </button>
                 <button
-                  onClick={() => {
-                    if (confirm("Apagar carta?")) {
-                      deleteCard(c.id);
-                      removeRemote({ data: { id: c.id } }).catch((err) =>
-                        console.error("Falha ao excluir no servidor", err),
-                      );
-                      refresh();
-                    }
-                  }}
+                  onClick={() => removeCard(c)}
+                  disabled={deletingId === c.id}
                   className="text-rose-300/80 px-3 py-1.5 inline-flex items-center gap-1"
                 >
-                  <Trash2 size={12} /> Apagar
+                  <Trash2 size={12} /> {deletingId === c.id ? "Apagando…" : "Apagar"}
                 </button>
               </div>
             </li>
