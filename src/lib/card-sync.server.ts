@@ -43,3 +43,9 @@ export async function fetchCardsByPackage(packageName: string) {
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     );
 }
+
+export async function deleteCardSnapshot(id: string) {
+  const { error } = await (supabaseAdmin as any).from(TABLE).delete().eq("id", id);
+  if (error) throw new Error(error.message || "Não foi possível excluir a carta.");
+  return { ok: true };
+}

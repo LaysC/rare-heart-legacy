@@ -58,3 +58,10 @@ export const getPackageCards = createServerFn({ method: "GET" })
     const seen = new Set<string>();
     return { cards: all.filter((c) => (seen.has(c.id) ? false : (seen.add(c.id), true))) };
   });
+
+export const deletePublishedCard = createServerFn({ method: "POST" })
+  .inputValidator((input) => z.object({ id: z.string().min(1).max(80) }).parse(input))
+  .handler(async ({ data }) => {
+    const { deleteCardSnapshot } = await import("./card-sync.server");
+    return deleteCardSnapshot(data.id);
+  });

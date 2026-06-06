@@ -43,14 +43,16 @@ function ScanPage() {
     let alive = true;
 
     async function loadCard() {
-      const fallback = resolveScannedCard(id, d);
-      if (fallback) setCards([fallback]);
-
       try {
         const result = await fetchPackage({ data: { id } });
-        if (alive && result.cards && result.cards.length > 0) setCards(result.cards);
-        else if (alive && fallback) setCards([fallback]);
+        if (!alive) return;
+        // Server is the single source of truth. If admin deleted the card,
+        // it must disappear here too — even when the QR URL still carries
+        // an encoded snapshot.
+        setCards(result.cards ?? []);
       } catch {
+        // Only fall back to URL/local snapshot when the server is unreachable.
+        const fallback = resolveScannedCard(id, d);
         if (alive && fallback) setCards([fallback]);
       } finally {
         if (alive) setLoading(false);
@@ -114,7 +116,7 @@ function ScanPage() {
   }
 
   return (
-    <main className="min-h-screen px-6 py-10 flex flex-col items-center justify-center overflow-hidden">
+    <main className="min-h-screen px-6 py-10 flex flex-col items-center justify-center">
       <AnimatePresence mode="wait">
         {stage === "pack" && (
           <motion.div
@@ -362,10 +364,25 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
     setBusy(true);
     try {
       const { toPng } = await import("html-to-image");
-      const dataUrl = await toPng(ref.current, {
-        pixelRatio: 3,
+      const node = ref.current;
+      const rect = node.getBoundingClientRect();
+      // Round up so the bottom row of pixels is never clipped.
+      const width = Math.ceil(rect.width);
+      const height = Math.ceil(rect.height);
+      const dataUrl = await toPng(node, {
+        pixelRatio: 4,
         cacheBust: true,
         backgroundColor: "transparent",
+        width,
+        height,
+        canvasWidth: width,
+        canvasHeight: height,
+        style: {
+          // Neutralize parent transforms (rotateY animation) during capture.
+          transform: "none",
+          margin: "0",
+          overflow: "visible",
+        },
       });
       const a = document.createElement("a");
       const safeName = (card.name || "carta").replace(/[^a-z0-9\-_]+/gi, "_").toLowerCase();
@@ -399,11 +416,33 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
         }}
         style={{ transformStyle: "preserve-3d", perspective: 1000 }}
       >
-        <div ref={ref} style={compact ? { transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 } : undefined}>
-          <HoloCard card={card} />
-        </div>
+        {compact ? (
+          <>
+            <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }}>
+              <HoloCard card={card} />
+            </div>
+            <div
+              ref={ref}
+              aria-hidden
+              style={{
+                position: "fixed",
+                top: 0,
+                left: -99999,
+                pointerEvents: "none",
+                display: "inline-block",
+                padding: 4,
+              }}
+            >
+              <HoloCard card={card} />
+            </div>
+          </>
+        ) : (
+          <div ref={ref} style={{ display: "inline-block", padding: 4 }}>
+            <HoloCard card={card} />
+          </div>
+        )}
       </motion.div>
-      <button
+      {!compact && <button
         type="button"
         onClick={onSave}
         disabled={busy}
@@ -411,7 +450,7 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
       >
         {saved ? <Check size={12} /> : <Download size={12} />}
         {saved ? "Salva!" : busy ? "Salvando…" : "Salvar carta"}
-      </button>
+      </button>}
     </div>
   );
 }

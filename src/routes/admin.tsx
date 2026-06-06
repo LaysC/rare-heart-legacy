@@ -1,6 +1,8 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { listCards, deleteCard, type CardData, SAMPLE_CARD, saveCard, newId, isRare } from "@/lib/cards";
+import { deletePublishedCard } from "@/lib/card-sync.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { Plus, Trash2, Edit3, ExternalLink, Sparkles, Copy, QrCode, Layers, Heart, LogOut } from "lucide-react";
 import { AdminGate } from "@/components/AdminGate";
 import { logoutAdmin } from "@/lib/admin-auth";
@@ -25,6 +27,7 @@ function AdminShell() {
 function AdminPage() {
   const [cards, setCards] = useState<CardData[]>([]);
   const nav = useNavigate();
+  const removeRemote = useServerFn(deletePublishedCard);
 
   useEffect(() => setCards(listCards()), []);
 
@@ -156,6 +159,9 @@ function AdminPage() {
                   onClick={() => {
                     if (confirm("Apagar carta?")) {
                       deleteCard(c.id);
+                      removeRemote({ data: { id: c.id } }).catch((err) =>
+                        console.error("Falha ao excluir no servidor", err),
+                      );
                       refresh();
                     }
                   }}
