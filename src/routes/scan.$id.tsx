@@ -43,14 +43,16 @@ function ScanPage() {
     let alive = true;
 
     async function loadCard() {
-      const fallback = resolveScannedCard(id, d);
-      if (fallback) setCards([fallback]);
-
       try {
         const result = await fetchPackage({ data: { id } });
-        if (alive && result.cards && result.cards.length > 0) setCards(result.cards);
-        else if (alive && fallback) setCards([fallback]);
+        if (!alive) return;
+        // Server is the single source of truth. If admin deleted the card,
+        // it must disappear here too — even when the QR URL still carries
+        // an encoded snapshot.
+        setCards(result.cards ?? []);
       } catch {
+        // Only fall back to URL/local snapshot when the server is unreachable.
+        const fallback = resolveScannedCard(id, d);
         if (alive && fallback) setCards([fallback]);
       } finally {
         if (alive) setLoading(false);
