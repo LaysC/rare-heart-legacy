@@ -49,3 +49,22 @@ export async function deleteCardSnapshot(id: string) {
   if (error) throw new Error(error.message || "Não foi possível excluir a carta.");
   return { ok: true };
 }
+
+export async function pruneCardSnapshots(activeIds: string[]) {
+  const active = new Set(activeIds);
+  const { data, error } = await (supabaseAdmin as any).from(TABLE).select("id");
+
+  if (error) throw new Error(error.message || "Não foi possível limpar cartas antigas.");
+
+  const staleIds = (Array.isArray(data) ? data : [])
+    .map((row: { id?: string }) => row.id)
+    .filter((id: string | undefined): id is string => Boolean(id) && !active.has(id));
+
+  for (let i = 0; i < staleIds.length; i += 100) {
+    const chunk = staleIds.slice(i, i + 100);
+    const { error: deleteError } = await (supabaseAdmin as any).from(TABLE).delete().in("id", chunk);
+    if (deleteError) throw new Error(deleteError.message || "Não foi possível limpar cartas antigas.");
+  }
+
+  return { ok: true, removed: staleIds.length };
+}
