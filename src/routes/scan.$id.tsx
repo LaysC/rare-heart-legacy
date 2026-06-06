@@ -1,7 +1,7 @@
-import { createFileRoute, useParams, useSearch, Link } from "@tanstack/react-router";
+import { createFileRoute, useParams, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { resolveScannedCard, isRare, type CardData } from "@/lib/cards";
+import { isRare, type CardData } from "@/lib/cards";
 import { getPackageCards } from "@/lib/card-sync.functions";
 import { HoloCard } from "@/components/HoloCard";
 import { Heart, Sparkles, ChevronRight, Calendar, Download, Check } from "lucide-react";
@@ -28,7 +28,6 @@ const SCAN_MESSAGES = [
 
 function ScanPage() {
   const { id } = useParams({ from: "/scan/$id" });
-  const { d } = useSearch({ from: "/scan/$id" });
   const fetchPackage = useServerFn(getPackageCards);
   const [cards, setCards] = useState<CardData[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -46,14 +45,9 @@ function ScanPage() {
       try {
         const result = await fetchPackage({ data: { id } });
         if (!alive) return;
-        // Server is the single source of truth. If admin deleted the card,
-        // it must disappear here too — even when the QR URL still carries
-        // an encoded snapshot.
         setCards(result.cards ?? []);
       } catch {
-        // Only fall back to URL/local snapshot when the server is unreachable.
-        const fallback = resolveScannedCard(id, d);
-        if (alive && fallback) setCards([fallback]);
+        if (alive) setCards([]);
       } finally {
         if (alive) setLoading(false);
       }
@@ -63,7 +57,7 @@ function ScanPage() {
     return () => {
       alive = false;
     };
-  }, [id, d, fetchPackage]);
+  }, [id, fetchPackage]);
 
   useEffect(() => {
     if (stage !== "scan") return;
@@ -97,8 +91,7 @@ function ScanPage() {
         <div className="glass rounded-2xl p-8 max-w-sm">
           <p className="text-muted-foreground mb-3">Carta não encontrada.</p>
           <p className="text-xs text-muted-foreground">
-            O QR pode ter sido gerado num link curto. Peça para gerar novamente
-            ou abra no mesmo dispositivo onde foi criada.
+            Esta carta não está mais disponível no painel administrativo.
           </p>
           <Link to="/" className="mt-4 inline-block text-rose-300 text-sm">voltar ao início</Link>
         </div>
