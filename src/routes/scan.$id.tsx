@@ -116,7 +116,7 @@ function ScanPage() {
   }
 
   return (
-    <main className="min-h-screen px-6 py-10 flex flex-col items-center justify-center overflow-hidden">
+    <main className="min-h-screen px-6 py-10 flex flex-col items-center justify-center">
       <AnimatePresence mode="wait">
         {stage === "pack" && (
           <motion.div
