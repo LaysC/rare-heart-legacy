@@ -65,3 +65,12 @@ export const deletePublishedCard = createServerFn({ method: "POST" })
     const { deleteCardSnapshot } = await import("./card-sync.server");
     return deleteCardSnapshot(data.id);
   });
+
+export const prunePublishedCards = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z.object({ activeIds: z.array(z.string().min(1).max(80)).max(1000) }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { pruneCardSnapshots } = await import("./card-sync.server");
+    return pruneCardSnapshots(data.activeIds);
+  });
