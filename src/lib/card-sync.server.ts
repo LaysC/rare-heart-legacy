@@ -58,7 +58,10 @@ export async function pruneCardSnapshots(activeIds: string[]) {
 
   const staleIds = (Array.isArray(data) ? data : [])
     .map((row: { id?: string }) => row.id)
-    .filter((id: string | undefined): id is string => Boolean(id) && !active.has(id));
+    .filter(
+      (id: string | undefined): id is string =>
+        typeof id === "string" && id.length > 0 && !active.has(id),
+    );
 
   for (let i = 0; i < staleIds.length; i += 100) {
     const chunk = staleIds.slice(i, i + 100);
