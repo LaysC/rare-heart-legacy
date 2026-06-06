@@ -364,10 +364,25 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
     setBusy(true);
     try {
       const { toPng } = await import("html-to-image");
-      const dataUrl = await toPng(ref.current, {
-        pixelRatio: 3,
+      const node = ref.current;
+      const rect = node.getBoundingClientRect();
+      // Round up so the bottom row of pixels is never clipped.
+      const width = Math.ceil(rect.width);
+      const height = Math.ceil(rect.height);
+      const dataUrl = await toPng(node, {
+        pixelRatio: 4,
         cacheBust: true,
         backgroundColor: "transparent",
+        width,
+        height,
+        canvasWidth: width,
+        canvasHeight: height,
+        style: {
+          // Neutralize parent transforms (rotateY animation) during capture.
+          transform: "none",
+          margin: "0",
+          overflow: "visible",
+        },
       });
       const a = document.createElement("a");
       const safeName = (card.name || "carta").replace(/[^a-z0-9\-_]+/gi, "_").toLowerCase();
@@ -401,9 +416,15 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
         }}
         style={{ transformStyle: "preserve-3d", perspective: 1000 }}
       >
-        <div ref={ref} style={compact ? { transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 } : undefined}>
-          <HoloCard card={card} />
-        </div>
+        {compact ? (
+          <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }}>
+            <HoloCard card={card} />
+          </div>
+        ) : (
+          <div ref={ref} style={{ display: "inline-block", padding: 4 }}>
+            <HoloCard card={card} />
+          </div>
+        )}
       </motion.div>
       <button
         type="button"
