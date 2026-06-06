@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { type CardData, type Rarity, type FrameStyle, saveCard, listCards, newId, BLANK_CARD } from "@/lib/cards";
-import { publishCardSnapshot, prunePublishedCards } from "@/lib/card-sync.functions";
+import { publishCardSnapshot, syncPublishedCards } from "@/lib/card-sync.functions";
 import { HoloCard } from "./HoloCard";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -18,7 +18,7 @@ const FRAMES: { value: FrameStyle; label: string }[] = [
 export function CardEditor({ initial }: { initial?: CardData }) {
   const nav = useNavigate();
   const publishCard = useServerFn(publishCardSnapshot);
-  const pruneRemote = useServerFn(prunePublishedCards);
+  const syncRemote = useServerFn(syncPublishedCards);
   const [card, setCard] = useState<CardData>(
     initial ?? {
       ...BLANK_CARD,
@@ -51,7 +51,7 @@ export function CardEditor({ initial }: { initial?: CardData }) {
     try {
       await publishCard({ data: saved });
       const current = listCards();
-      await pruneRemote({ data: { activeIds: current.map((item) => item.id) } });
+      await syncRemote({ data: { cards: current } });
       nav({ to: "/card/$id", params: { id: saved.id } });
     } catch {
       setError("A carta foi salva neste dispositivo, mas não foi publicada para o QR Code. Tente salvar novamente.");
