@@ -171,7 +171,7 @@ export function CardBack({ className = "" }: { className?: string }) {
     <div
       className={`relative aspect-[2.5/3.5] shadow-glow ${className}`}
       style={{
-        width: "min(340px, calc(100vw - 1.5rem))",
+        width: "min(320px, calc(100vw - 2rem))",
         borderRadius: "1.25rem",
         padding: 10,
         background:
@@ -262,7 +262,7 @@ export function CardFlipper({ card, className = "" }: { card: CardData; classNam
         className="relative"
         style={{
           perspective: 1400,
-          width: "min(340px, calc(100vw - 1.5rem))",
+        width: "min(320px, calc(100vw - 2rem))",
         }}
       >
         <div
