@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { type CardData, type Rarity, type FrameStyle, saveCard, listCards, newId, BLANK_CARD } from "@/lib/cards";
 import { publishCardSnapshot, syncPublishedCards } from "@/lib/card-sync.functions";
-import { HoloCard } from "./HoloCard";
+import { CardFlipper } from "./HoloCard";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Upload, Save, Trash2 } from "lucide-react";
@@ -66,10 +66,10 @@ export function CardEditor({ initial }: { initial?: CardData }) {
         <h2 className="font-bold text-lg mb-2">Dados da carta</h2>
         <Grid>
           <Field label="Nome">
-            <input className={inp} value={card.name} onChange={(e) => update("name", e.target.value)} />
+            <input className={inp} maxLength={24} value={card.name} onChange={(e) => update("name", e.target.value)} />
           </Field>
           <Field label="Categoria">
-            <input className={inp} value={card.category} onChange={(e) => update("category", e.target.value)} />
+            <input className={inp} maxLength={28} value={card.category} onChange={(e) => update("category", e.target.value)} />
           </Field>
           <Field label="Raridade">
             <select className={inp} value={card.rarity} onChange={(e) => update("rarity", e.target.value as Rarity)}>
@@ -91,26 +91,26 @@ export function CardEditor({ initial }: { initial?: CardData }) {
             </select>
           </Field>
           <Field label="Valor exibido">
-            <input className={inp} value={card.displayValue} onChange={(e) => update("displayValue", e.target.value)} />
+            <input className={inp} maxLength={18} value={card.displayValue} onChange={(e) => update("displayValue", e.target.value)} />
           </Field>
           <Field label="Pacote">
-            <input className={inp} value={card.packageName || ""} onChange={(e) => update("packageName", e.target.value)} />
+            <input className={inp} maxLength={32} value={card.packageName || ""} onChange={(e) => update("packageName", e.target.value)} />
           </Field>
         </Grid>
-        <Field label="Descrição">
-          <textarea className={inp + " min-h-20"} value={card.description} onChange={(e) => update("description", e.target.value)} />
+        <Field label="Descrição (máx. 110)">
+          <textarea className={inp + " min-h-20"} maxLength={110} value={card.description} onChange={(e) => update("description", e.target.value)} />
         </Field>
-        <Field label="Ataque Especial">
-          <textarea className={inp + " min-h-16"} value={card.specialAttack} onChange={(e) => update("specialAttack", e.target.value)} />
+        <Field label="Ataque Especial (máx. 90)">
+          <textarea className={inp + " min-h-16"} maxLength={90} value={card.specialAttack} onChange={(e) => update("specialAttack", e.target.value)} />
         </Field>
-        <Field label="Habilidade">
-          <textarea className={inp + " min-h-16"} value={card.ability} onChange={(e) => update("ability", e.target.value)} />
+        <Field label="Habilidade (máx. 90)">
+          <textarea className={inp + " min-h-16"} maxLength={90} value={card.ability} onChange={(e) => update("ability", e.target.value)} />
         </Field>
         <Field label="Mensagem secreta (revelação)">
-          <textarea className={inp + " min-h-24"} value={card.secretMessage} onChange={(e) => update("secretMessage", e.target.value)} />
+          <textarea className={inp + " min-h-24"} maxLength={240} value={card.secretMessage} onChange={(e) => update("secretMessage", e.target.value)} />
         </Field>
         <Field label="Rodapé">
-          <input className={inp} value={card.footer || ""} onChange={(e) => update("footer", e.target.value)} />
+          <input className={inp} maxLength={40} value={card.footer || ""} onChange={(e) => update("footer", e.target.value)} />
         </Field>
         <Field label="Texto romântico (relatório completo)">
           <textarea className={inp + " min-h-24"} value={card.romanticText || ""} onChange={(e) => update("romanticText", e.target.value)} />
@@ -155,7 +155,7 @@ export function CardEditor({ initial }: { initial?: CardData }) {
 
       <div className="sticky top-6 flex flex-col items-center gap-3">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">Preview</p>
-        <HoloCard card={card} />
+        <CardFlipper card={card} />
       </div>
     </div>
   );
