@@ -39,17 +39,17 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
       style={{
         ...frameStyles[frame],
         borderRadius: "1.25rem",
-        width: "min(340px, calc(100vw - 1.5rem))",
+        width: "min(320px, calc(100vw - 2rem))",
         containerType: "inline-size",
       } as CSSProperties}
     >
       <div
-        className="relative h-full w-full rounded-[1rem] flex flex-col"
+        className="relative h-full w-full rounded-[1rem] flex flex-col overflow-hidden"
         style={{
           background: "linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.75))",
           border: "1px solid rgba(255,255,255,0.15)",
-          padding: "4cqw",
-          gap: "2cqw",
+          padding: "3.5cqw",
+          gap: "1.5cqw",
         }}
       >
         {/* Header */}
@@ -84,7 +84,7 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
         {/* Image */}
         <div
-          className="relative flex-1 rounded-md overflow-hidden border border-white/10 z-[5]"
+          className="relative flex-1 min-h-0 rounded-md overflow-hidden border border-white/10 z-[5]"
           style={{
             background: card.imageDataUrl
               ? "rgba(255,255,255,0.04)"
@@ -171,7 +171,7 @@ export function CardBack({ className = "" }: { className?: string }) {
     <div
       className={`relative aspect-[2.5/3.5] shadow-glow ${className}`}
       style={{
-        width: "min(340px, calc(100vw - 1.5rem))",
+        width: "min(320px, calc(100vw - 2rem))",
         borderRadius: "1.25rem",
         padding: 10,
         background:
@@ -262,7 +262,7 @@ export function CardFlipper({ card, className = "" }: { card: CardData; classNam
         className="relative"
         style={{
           perspective: 1400,
-          width: "min(340px, calc(100vw - 1.5rem))",
+        width: "min(320px, calc(100vw - 2rem))",
         }}
       >
         <div
