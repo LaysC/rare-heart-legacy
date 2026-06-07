@@ -1,7 +1,7 @@
 import { createFileRoute, useParams, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { isRare, type CardData } from "@/lib/cards";
+import { type CardData } from "@/lib/cards";
 import { getPackageCards } from "@/lib/card-sync.functions";
 import { HoloCard, CardFlipper } from "@/components/HoloCard";
 import { Heart, Sparkles, ChevronRight, Calendar, Download, Check } from "lucide-react";
