@@ -1,9 +1,9 @@
 import { createFileRoute, useParams, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { isRare, type CardData } from "@/lib/cards";
+import { type CardData } from "@/lib/cards";
 import { getPackageCards } from "@/lib/card-sync.functions";
-import { HoloCard } from "@/components/HoloCard";
+import { HoloCard, CardFlipper } from "@/components/HoloCard";
 import { Heart, Sparkles, ChevronRight, Calendar, Download, Check } from "lucide-react";
 import { PackOpening } from "@/components/PackOpening";
 import { useServerFn } from "@tanstack/react-start";
@@ -391,47 +391,35 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
   return (
     <div className="flex flex-col items-center gap-3">
       <motion.div
-        initial={{ scale: 0.6, rotateY: -90, opacity: 0 }}
-        animate={{
-          scale: 1,
-          rotateY: !compact && isRare(card.rarity) ? [0, 8, -8, 6, -6, 0] : 0,
-          opacity: 1,
-        }}
-        transition={{
-          scale: { type: "spring", stiffness: 80, damping: 14 },
-          rotateY:
-            !compact && isRare(card.rarity)
-              ? { duration: 6, repeat: Infinity, ease: "easeInOut" }
-              : undefined,
-        }}
-        style={{ transformStyle: "preserve-3d", perspective: 1000 }}
+        initial={{ scale: 0.6, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ scale: { type: "spring", stiffness: 80, damping: 14 } }}
       >
         {compact ? (
-          <>
-            <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }}>
-              <HoloCard card={card} />
-            </div>
-            <div
-              ref={ref}
-              aria-hidden
-              style={{
-                position: "fixed",
-                top: 0,
-                left: -99999,
-                pointerEvents: "none",
-                display: "inline-block",
-                padding: 4,
-              }}
-            >
-              <HoloCard card={card} />
-            </div>
-          </>
-        ) : (
-          <div ref={ref} style={{ display: "inline-block", padding: 4 }}>
+          <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }}>
             <HoloCard card={card} />
           </div>
+        ) : (
+          <CardFlipper card={card} />
         )}
       </motion.div>
+      {/* Hidden full-size card used for high-quality PNG export */}
+      {!compact && (
+        <div
+          ref={ref}
+          aria-hidden
+          style={{
+            position: "fixed",
+            top: 0,
+            left: -99999,
+            pointerEvents: "none",
+            display: "inline-block",
+            padding: 4,
+          }}
+        >
+          <HoloCard card={card} />
+        </div>
+      )}
       {!compact && <button
         type="button"
         onClick={onSave}
