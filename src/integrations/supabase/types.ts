@@ -32,6 +32,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_collections: {
+        Row: {
+          card_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
