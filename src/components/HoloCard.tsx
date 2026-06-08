@@ -16,6 +16,9 @@ const rarityBadge: Record<string, string> = {
   "Única": "bg-gradient-romance text-white",
 };
 
+const CARD_WIDTH = "min(320px, calc(100vw - 3rem), 46svh)";
+const CARD_RATIO = "2.5 / 3.5";
+
 export function HoloCard({ card, className = "", printable = false }: Props) {
   const accent = card.primaryColor || "#ff4d6d";
   const accent2 = card.secondaryColor || "#a4508b";
@@ -35,21 +38,22 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
   return (
     <div
-      className={`${rare || frame === "holo" ? "holo-card" : ""} relative aspect-[2.5/3.5] shadow-glow ${className}`}
+      className={`${rare || frame === "holo" ? "holo-card" : ""} relative shadow-glow ${className}`}
       style={{
         ...frameStyles[frame],
         borderRadius: "1.25rem",
-        width: "min(320px, calc(100vw - 2rem))",
+        width: CARD_WIDTH,
+        aspectRatio: CARD_RATIO,
         containerType: "inline-size",
       } as CSSProperties}
     >
       <div
-        className="relative h-full w-full rounded-[1rem] flex flex-col overflow-hidden"
+        className="relative min-h-full w-full rounded-[1rem] flex flex-col overflow-hidden"
         style={{
           background: "linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.75))",
           border: "1px solid rgba(255,255,255,0.15)",
-          padding: "3.5cqw",
-          gap: "1.5cqw",
+          padding: "3cqw",
+          gap: "1.25cqw",
         }}
       >
         {/* Header */}
@@ -84,12 +88,13 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
         {/* Image */}
         <div
-          className="relative flex-1 min-h-0 rounded-md overflow-hidden border border-white/10 z-[5]"
+          className="relative flex-none rounded-md overflow-hidden border border-white/10 z-[5]"
           style={{
             background: card.imageDataUrl
               ? "rgba(255,255,255,0.04)"
               : `linear-gradient(135deg, ${accent}, ${accent2})`,
             isolation: "isolate",
+            height: "clamp(170px, 68cqw, 218px)",
           }}
         >
           {card.imageDataUrl ? (
@@ -117,7 +122,7 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
         {/* Body */}
         <div
           className="text-white/90 relative z-[4] leading-snug"
-          style={{ fontSize: "clamp(0.58rem, 2.55cqw, 0.78rem)" }}
+          style={{ fontSize: "clamp(0.55rem, 2.35cqw, 0.72rem)" }}
         >
           {card.description && (
             <p className="italic opacity-80 mb-[1.5cqw]">{card.description}</p>
@@ -142,14 +147,14 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
         {/* Footer */}
         <div
-          className="mt-auto flex items-center justify-between text-white/70 border-t border-white/10 relative z-[4]"
-          style={{ fontSize: "clamp(0.5rem, 2.3cqw, 0.65rem)", paddingTop: "1.5cqw" }}
+          className="mt-auto flex items-start justify-between gap-2 text-white/70 border-t border-white/10 relative z-[4]"
+          style={{ fontSize: "clamp(0.48rem, 2.05cqw, 0.62rem)", paddingTop: "1.25cqw" }}
         >
-          <span className="flex items-center gap-1 min-w-0">
+          <span className="flex items-start gap-1 min-w-0 flex-1 text-left leading-tight">
             <Sparkles style={{ width: "2.6cqw", height: "2.6cqw", minWidth: 9, minHeight: 9 }} />
-            <span className="truncate-none">{card.footer || "Edição Coração"}</span>
+            <span>{card.footer || "Edição Coração"}</span>
           </span>
-          <span className="font-mono">
+          <span className="font-mono shrink-0">
             #{card.id.slice(0, 6).toUpperCase()}
           </span>
         </div>
@@ -169,9 +174,10 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 export function CardBack({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`relative aspect-[2.5/3.5] shadow-glow ${className}`}
+      className={`relative shadow-glow ${className}`}
       style={{
-        width: "min(320px, calc(100vw - 2rem))",
+        width: CARD_WIDTH,
+        aspectRatio: CARD_RATIO,
         borderRadius: "1.25rem",
         padding: 10,
         background:
@@ -262,31 +268,31 @@ export function CardFlipper({ card, className = "" }: { card: CardData; classNam
         className="relative"
         style={{
           perspective: 1400,
-        width: "min(320px, calc(100vw - 2rem))",
+          width: CARD_WIDTH,
         }}
       >
         <div
-          className="relative w-full aspect-[2.5/3.5] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          className="grid w-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
           style={{
             transformStyle: "preserve-3d",
             transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
           }}
         >
           <div
-            className="absolute inset-0"
+            className="[grid-area:1/1]"
             style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
           >
             <HoloCard card={card} />
           </div>
           <div
-            className="absolute inset-0"
+            className="[grid-area:1/1] h-full"
             style={{
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
             }}
           >
-            <CardBack />
+            <CardBack className="h-full" />
           </div>
         </div>
       </div>
