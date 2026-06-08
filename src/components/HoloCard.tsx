@@ -16,8 +16,8 @@ const rarityBadge: Record<string, string> = {
   "Única": "bg-gradient-romance text-white",
 };
 
-const CARD_WIDTH = "min(320px, calc(100vw - 3rem), calc(56svh - 4rem))";
-const CARD_RATIO = "2.5 / 4.25";
+const CARD_WIDTH = "min(320px, calc(100vw - 3rem), 46svh)";
+const CARD_RATIO = "2.5 / 3.5";
 
 export function HoloCard({ card, className = "", printable = false }: Props) {
   const accent = card.primaryColor || "#ff4d6d";
