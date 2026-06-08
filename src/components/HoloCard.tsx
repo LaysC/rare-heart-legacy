@@ -174,9 +174,10 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 export function CardBack({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`relative aspect-[2.5/3.5] shadow-glow ${className}`}
+      className={`relative shadow-glow ${className}`}
       style={{
-        width: "min(320px, calc(100vw - 2rem))",
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
         borderRadius: "1.25rem",
         padding: 10,
         background:
@@ -267,11 +268,12 @@ export function CardFlipper({ card, className = "" }: { card: CardData; classNam
         className="relative"
         style={{
           perspective: 1400,
-        width: "min(320px, calc(100vw - 2rem))",
+          width: CARD_WIDTH,
+          height: CARD_HEIGHT,
         }}
       >
         <div
-          className="relative w-full aspect-[2.5/3.5] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          className="relative h-full w-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
           style={{
             transformStyle: "preserve-3d",
             transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
