@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Heart, Sparkles, QrCode, Gift } from "lucide-react";
 import { motion } from "framer-motion";
+import { AuthButton } from "@/components/AuthButton";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -18,6 +19,9 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <main className="relative min-h-screen px-6 py-16 flex flex-col items-center justify-center text-center overflow-hidden">
+      <div className="absolute top-4 right-4 z-10">
+        <AuthButton />
+      </div>
       {/* Ambient glow */}
       <motion.div
         className="pointer-events-none absolute inset-0 -z-10 blur-3xl opacity-60"
