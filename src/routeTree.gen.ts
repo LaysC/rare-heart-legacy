@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ScannerRouteImport } from './routes/scanner'
+import { Route as CollectionRouteImport } from './routes/collection'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ScanIdRouteImport } from './routes/scan.$id'
@@ -20,6 +21,11 @@ import { Route as AdminEditIdRouteImport } from './routes/admin.edit.$id'
 const ScannerRoute = ScannerRouteImport.update({
   id: '/scanner',
   path: '/scanner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionRoute = CollectionRouteImport.update({
+  id: '/collection',
+  path: '/collection',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -56,6 +62,7 @@ const AdminEditIdRoute = AdminEditIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/collection': typeof CollectionRoute
   '/scanner': typeof ScannerRoute
   '/admin/new': typeof AdminNewRoute
   '/card/$id': typeof CardIdRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/collection': typeof CollectionRoute
   '/scanner': typeof ScannerRoute
   '/admin/new': typeof AdminNewRoute
   '/card/$id': typeof CardIdRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/collection': typeof CollectionRoute
   '/scanner': typeof ScannerRoute
   '/admin/new': typeof AdminNewRoute
   '/card/$id': typeof CardIdRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/collection'
     | '/scanner'
     | '/admin/new'
     | '/card/$id'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/collection'
     | '/scanner'
     | '/admin/new'
     | '/card/$id'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/collection'
     | '/scanner'
     | '/admin/new'
     | '/card/$id'
@@ -114,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  CollectionRoute: typeof CollectionRoute
   ScannerRoute: typeof ScannerRoute
   CardIdRoute: typeof CardIdRoute
   ScanIdRoute: typeof ScanIdRoute
@@ -126,6 +139,13 @@ declare module '@tanstack/react-router' {
       path: '/scanner'
       fullPath: '/scanner'
       preLoaderRoute: typeof ScannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collection': {
+      id: '/collection'
+      path: '/collection'
+      fullPath: '/collection'
+      preLoaderRoute: typeof CollectionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -188,6 +208,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  CollectionRoute: CollectionRoute,
   ScannerRoute: ScannerRoute,
   CardIdRoute: CardIdRoute,
   ScanIdRoute: ScanIdRoute,
@@ -195,3 +216,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
