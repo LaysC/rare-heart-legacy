@@ -16,8 +16,8 @@ const rarityBadge: Record<string, string> = {
   "Única": "bg-gradient-romance text-white",
 };
 
-const CARD_WIDTH = "min(320px, calc(100vw - 3rem))";
-const CARD_MIN_HEIGHT = "min(570px, calc((100vw - 3rem) * 1.78))";
+const CARD_WIDTH = "min(320px, calc(100vw - 3rem), calc(56svh - 4rem))";
+const CARD_RATIO = "2.5 / 4.25";
 
 export function HoloCard({ card, className = "", printable = false }: Props) {
   const accent = card.primaryColor || "#ff4d6d";
@@ -43,7 +43,7 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
         ...frameStyles[frame],
         borderRadius: "1.25rem",
         width: CARD_WIDTH,
-        minHeight: CARD_MIN_HEIGHT,
+        aspectRatio: CARD_RATIO,
         containerType: "inline-size",
       } as CSSProperties}
     >
@@ -94,7 +94,7 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
               ? "rgba(255,255,255,0.04)"
               : `linear-gradient(135deg, ${accent}, ${accent2})`,
             isolation: "isolate",
-            height: "min(240px, 76cqw)",
+            height: "clamp(170px, 68cqw, 218px)",
           }}
         >
           {card.imageDataUrl ? (
@@ -177,7 +177,7 @@ export function CardBack({ className = "" }: { className?: string }) {
       className={`relative shadow-glow ${className}`}
       style={{
         width: CARD_WIDTH,
-        minHeight: CARD_MIN_HEIGHT,
+        aspectRatio: CARD_RATIO,
         borderRadius: "1.25rem",
         padding: 10,
         background:
@@ -269,7 +269,6 @@ export function CardFlipper({ card, className = "" }: { card: CardData; classNam
         style={{
           perspective: 1400,
           width: CARD_WIDTH,
-          minHeight: CARD_MIN_HEIGHT,
         }}
       >
         <div
