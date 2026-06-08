@@ -3,10 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { type CardData } from "@/lib/cards";
 import { getPackageCards } from "@/lib/card-sync.functions";
+import { addToCollection } from "@/lib/collection.functions";
 import { HoloCard, CardFlipper } from "@/components/HoloCard";
 import { Heart, Sparkles, ChevronRight, Calendar, Download, Check } from "lucide-react";
 import { PackOpening } from "@/components/PackOpening";
 import { useServerFn } from "@tanstack/react-start";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthButton } from "@/components/AuthButton";
 
 export const Route = createFileRoute("/scan/$id")({
   head: () => ({ meta: [{ title: "Análise da carta…" }] }),
@@ -26,6 +29,8 @@ const SCAN_MESSAGES = [
 function ScanPage() {
   const { id } = useParams({ from: "/scan/$id" });
   const fetchPackage = useServerFn(getPackageCards);
+  const addCard = useServerFn(addToCollection);
+  const { user } = useAuth();
   const [cards, setCards] = useState<CardData[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
   const [stage, setStage] = useState<Stage>("pack");
@@ -55,6 +60,14 @@ function ScanPage() {
       alive = false;
     };
   }, [id, fetchPackage]);
+
+  // Auto-add discovered cards to the signed-in user's collection.
+  useEffect(() => {
+    if (!user || cards.length === 0) return;
+    cards.forEach((c) => {
+      addCard({ data: { cardId: c.id } }).catch(() => {});
+    });
+  }, [user, cards, addCard]);
 
   useEffect(() => {
     if (stage !== "scan") return;
@@ -107,6 +120,9 @@ function ScanPage() {
 
   return (
     <main className="min-h-screen px-6 py-10 flex flex-col items-center justify-center">
+      <div className="absolute top-4 right-4 z-10">
+        <AuthButton />
+      </div>
       <AnimatePresence mode="wait">
         {stage === "pack" && (
           <motion.div
