@@ -17,7 +17,7 @@ const rarityBadge: Record<string, string> = {
 };
 
 const CARD_WIDTH = "min(320px, calc(100vw - 3rem))";
-const CARD_HEIGHT = "min(570px, calc((100vw - 3rem) * 1.78))";
+const CARD_MIN_HEIGHT = "min(570px, calc((100vw - 3rem) * 1.78))";
 
 export function HoloCard({ card, className = "", printable = false }: Props) {
   const accent = card.primaryColor || "#ff4d6d";
@@ -43,12 +43,12 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
         ...frameStyles[frame],
         borderRadius: "1.25rem",
         width: CARD_WIDTH,
-        height: CARD_HEIGHT,
+        minHeight: CARD_MIN_HEIGHT,
         containerType: "inline-size",
       } as CSSProperties}
     >
       <div
-        className="relative h-full w-full rounded-[1rem] flex flex-col overflow-hidden"
+        className="relative min-h-full w-full rounded-[1rem] flex flex-col overflow-hidden"
         style={{
           background: "linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.75))",
           border: "1px solid rgba(255,255,255,0.15)",
@@ -177,7 +177,7 @@ export function CardBack({ className = "" }: { className?: string }) {
       className={`relative shadow-glow ${className}`}
       style={{
         width: CARD_WIDTH,
-        height: CARD_HEIGHT,
+        minHeight: CARD_MIN_HEIGHT,
         borderRadius: "1.25rem",
         padding: 10,
         background:
@@ -269,31 +269,31 @@ export function CardFlipper({ card, className = "" }: { card: CardData; classNam
         style={{
           perspective: 1400,
           width: CARD_WIDTH,
-          height: CARD_HEIGHT,
+          minHeight: CARD_MIN_HEIGHT,
         }}
       >
         <div
-          className="relative h-full w-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          className="grid w-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
           style={{
             transformStyle: "preserve-3d",
             transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
           }}
         >
           <div
-            className="absolute inset-0"
+            className="[grid-area:1/1]"
             style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
           >
             <HoloCard card={card} />
           </div>
           <div
-            className="absolute inset-0"
+            className="[grid-area:1/1] h-full"
             style={{
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
             }}
           >
-            <CardBack />
+            <CardBack className="h-full" />
           </div>
         </div>
       </div>
