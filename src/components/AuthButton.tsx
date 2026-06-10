@@ -1,51 +1,62 @@
-import { Link } from "@tanstack/react-router";
-import { LogIn, LogOut, Library } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { lovable } from "@/integrations/lovable";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "@tanstack/react-router";
+import { LogIn, User } from "lucide-react";
 
 export function AuthButton() {
-  const { user, loading } = useAuth();
+  const [session, setSession] = useState<any>(null);
+  const navigate = useNavigate();
 
-  if (loading) return null;
-
-  async function signIn() {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + window.location.pathname,
+  useEffect(() => {
+    // Verifica se já tem alguém logado quando a página carrega
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
     });
-    if (result.error) console.error(result.error);
+
+    // Fica de olho se o usuário fizer login ou logout
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function handleGoogleLogin() {
+    // O login oficial do Supabase, ignorando a rota falsa do Lovable
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        // Redireciona de volta para a Vercel corretamente
+        redirectTo: window.location.origin + "/admin",
+      },
+    });
+
+    if (error) {
+      console.error("Erro no login com Google:", error.message);
+    }
   }
 
-  async function signOut() {
-    await supabase.auth.signOut();
-  }
-
-  if (!user) {
+  // Se já estiver logado, mostra o botão para ir pro painel Admin
+  if (session) {
     return (
       <button
-        onClick={signIn}
-        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors"
+        onClick={() => navigate({ to: "/admin" })}
+        className="glass px-4 py-2 rounded-full text-sm font-medium text-rose-200 hover:bg-white/10 flex items-center gap-2 shadow-glow"
       >
-        <LogIn size={12} /> Entrar com Google
+        <User size={16} /> Painel Admin
       </button>
     );
   }
 
+  // Se não estiver logado, mostra o botão de login
   return (
-    <div className="flex items-center gap-2">
-      <Link
-        to="/collection"
-        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors"
-      >
-        <Library size={12} /> Minha coleção
-      </Link>
-      <button
-        onClick={signOut}
-        title="Sair"
-        className="glass p-2 rounded-full text-xs inline-flex items-center hover:bg-white/10 transition-colors"
-      >
-        <LogOut size={12} />
-      </button>
-    </div>
+    <button
+      onClick={handleGoogleLogin}
+      className="glass px-4 py-2 rounded-full text-sm font-medium text-rose-200 hover:bg-white/10 flex items-center gap-2 shadow-glow"
+    >
+      <LogIn size={16} /> Login
+    </button>
   );
 }
