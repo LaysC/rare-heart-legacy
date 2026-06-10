@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
-import { LogIn, User, Mail, Check } from "lucide-react";
+import { User, Heart } from "lucide-react";
 
 export function AuthButton() {
   const [session, setSession] = useState<any>(null);
-  const [email, setEmail] = useState("");
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
+  
+  // O e-mail falso fica escondido aqui no código, ele nunca vai ver!
+  const emailFixo = "surpresa@1206.com"; 
+  const [senhaData, setSenhaData] = useState("");
+  
+  const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const navigate = useNavigate();
 
@@ -17,61 +20,57 @@ export function AuthButton() {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function handleMagicLink(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    setSending(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin + "/admin" },
+    setLoading(true);
+    
+    // Mandamos o e-mail invisível e a data que ele digitou para o cofre
+    const { error } = await supabase.auth.signInWithPassword({
+      email: emailFixo,
+      password: senhaData,
     });
-    setSending(false);
-    if (!error) {
-      setSent(true);
+    setLoading(false);
+    
+    if (error) {
+      alert(`Ops, data incorreta! Tente novamente, amor. ❤️`);
     } else {
-      console.error("Erro ao enviar email:", error.message);
-      alert("Erro ao enviar o link. Verifique o console.");
+      navigate({ to: "/admin" });
     }
   }
 
-  // Já está logado
+  // Se já estiver logado, mostra o botão do Painel
   if (session) {
     return (
       <button onClick={() => navigate({ to: "/admin" })} className="glass px-4 py-2 rounded-full text-sm font-medium text-rose-200 hover:bg-white/10 flex items-center gap-2 shadow-glow">
-        <User size={16} /> Painel Admin
+        <User size={16} /> Ver Cartas
       </button>
     );
   }
 
-  // Mostra o campo de email depois de clicar em Login
+  // A tela fofa só pedindo a data
   if (showForm) {
-    if (sent) {
-      return (
-        <div className="glass px-4 py-2 rounded-full text-sm font-medium text-emerald-300 flex items-center gap-2 shadow-glow border-emerald-500/30">
-          <Check size={16} /> Link enviado pro seu email!
-        </div>
-      );
-    }
     return (
-      <form onSubmit={handleMagicLink} className="flex items-center gap-2">
+      <form onSubmit={handleLogin} className="flex flex-col gap-3 bg-black/60 p-5 rounded-xl border border-white/10 shadow-xl backdrop-blur-md">
+        <p className="text-sm font-medium text-rose-200 text-center">Qual é a nossa data?</p>
         <input 
-          type="email" 
-          placeholder="Digite seu email..." 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
+          type="text" 
+          placeholder="Ex: 12/06/2024" 
+          value={senhaData} 
+          onChange={(e) => setSenhaData(e.target.value)} 
           required 
-          className="px-4 py-2 rounded-full bg-black/40 border border-white/10 text-sm text-white outline-none w-48 focus:border-rose-400 transition-colors" 
+          className="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-sm text-center text-white outline-none w-48 focus:border-rose-400" 
         />
-        <button type="submit" disabled={sending} className="glass px-4 py-2 rounded-full text-sm font-medium text-rose-200 hover:bg-white/10 flex items-center gap-2 shadow-glow">
-          {sending ? "Enviando..." : <><Mail size={16} /> Enviar</>}
+        <button type="submit" disabled={loading} className="bg-gradient-romance text-white px-4 py-2 rounded-lg text-sm font-medium hover:scale-105 transition-transform shadow-glow">
+          {loading ? "Abrindo..." : "Acessar Coleção"}
         </button>
       </form>
     );
   }
 
-  // Botão inicial
+  // O botão inicial
   return (
     <button onClick={() => setShowForm(true)} className="glass px-4 py-2 rounded-full text-sm font-medium text-rose-200 hover:bg-white/10 flex items-center gap-2 shadow-glow">
-      <LogIn size={16} /> Login
+      <Heart size={16} /> Acessar Presente
     </button>
   );
 }
