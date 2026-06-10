@@ -96,8 +96,27 @@ function CardView() {
 
       <style>{`
         @media print {
-          body { background: white !important; }
-          .glass { background: white !important; box-shadow: none !important; border-color: #ddd !important; }
+          @page {
+            size: A4 portrait;
+            margin: 1cm;
+          }
+          body { 
+            background: white !important; 
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .glass { 
+            background: white !important; 
+            box-shadow: none !important; 
+            border-color: #ddd !important; 
+          }
+          /* Força o contêiner da carta a ter um tamanho fixo para que o cqw funcione direito */
+          .holo-card {
+            width: 320px !important;
+            height: calc(320px * (3.5 / 2.5)) !important;
+            margin: 0 auto;
+            break-inside: avoid;
+          }
         }
       `}</style>
     </main>

@@ -53,8 +53,10 @@ export function CardEditor({ initial }: { initial?: CardData }) {
       const current = listCards();
       await syncRemote({ data: { cards: current } });
       nav({ to: "/card/$id", params: { id: saved.id } });
-    } catch {
-      setError("A carta foi salva neste dispositivo, mas não foi publicada para o QR Code. Tente salvar novamente.");
+    } catch (err: any) {
+      console.error("Erro real capturado:", err);
+      // Revela o erro verdadeiro na tela do app
+      setError(`Erro real do servidor: ${err?.message || JSON.stringify(err)}`);
     } finally {
       setSaving(false);
     }
