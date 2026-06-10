@@ -6,7 +6,7 @@ import { User, Heart } from "lucide-react";
 export function AuthButton() {
   const [session, setSession] = useState<any>(null);
   
-  // O e-mail falso fica escondido aqui no código, ele nunca vai ver!
+  // O e-mail falso fica escondido aqui, ele nunca vai ver!
   const emailFixo = "surpresa@1206.com"; 
   const [senhaData, setSenhaData] = useState("");
   
@@ -34,8 +34,8 @@ export function AuthButton() {
     if (error) {
       alert(`Ops, data incorreta! Tente novamente, amor. ❤️`);
     } else {
-      // REDIRECIONAMENTO CORRIGIDO AQUI:
-      navigate({ to: "/cartas" }); 
+      // Redirecionando direto para a coleção!
+      navigate({ to: "/collection" }); 
     }
   }
 
@@ -75,3 +75,5 @@ export function AuthButton() {
     </button>
   );
 }
+
+// Forçando a Vercel a limpar o cache do link principal
