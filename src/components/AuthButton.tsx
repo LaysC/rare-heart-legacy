@@ -42,7 +42,7 @@ export function AuthButton() {
   // Se já estiver logado, mostra o botão para ir direto para a coleção
   if (session) {
     return (
-      <button onClick={() => navigate({ to: "/cartas" })} className="glass px-4 py-2 rounded-full text-sm font-medium text-rose-200 hover:bg-white/10 flex items-center gap-2 shadow-glow">
+      <button onClick={() => navigate({ to: "/collection" })} className="glass px-4 py-2 rounded-full text-sm font-medium text-rose-200 hover:bg-white/10 flex items-center gap-2 shadow-glow">
         <User size={16} /> Ver Cartas
       </button>
     );

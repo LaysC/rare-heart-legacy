@@ -4,10 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { getMyCollection, removeFromCollection } from "@/lib/collection.functions";
 import { HoloCard } from "@/components/HoloCard";
 import { useAuth } from "@/hooks/useAuth";
-import { lovable } from "@/integrations/lovable";
-import { Heart, Share2, Trash2, Sparkles, LogIn } from "lucide-react";
+import { Heart, Share2, Trash2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
+import { AuthButton } from "@/components/AuthButton";
 
 export const Route = createFileRoute("/collection")({
   ssr: false,
@@ -34,6 +34,7 @@ function CollectionPage() {
     );
   }
 
+  // Tela de quando ele ainda não colocou a data
   if (!user) {
     return (
       <main className="min-h-screen grid place-items-center px-6 text-center">
@@ -41,18 +42,13 @@ function CollectionPage() {
           <Heart className="mx-auto text-rose-300 mb-3" size={32} />
           <h1 className="text-xl font-bold mb-2">Sua coleção</h1>
           <p className="text-sm text-muted-foreground mb-5">
-            Entre com sua conta Google para guardar as cartas que descobrir.
+            Coloque a nossa data para acessar as suas cartas.
           </p>
-          <button
-            onClick={() =>
-              lovable.auth.signInWithOAuth("google", {
-                redirect_uri: window.location.origin + "/collection",
-              })
-            }
-            className="bg-gradient-romance text-white px-5 py-2.5 rounded-full font-semibold inline-flex items-center gap-2 shadow-glow"
-          >
-            <LogIn size={14} /> Entrar com Google
-          </button>
+          
+          <div className="flex justify-center">
+            <AuthButton />
+          </div>
+
           <div className="mt-4">
             <Link to="/" className="text-xs text-muted-foreground">← voltar</Link>
           </div>
