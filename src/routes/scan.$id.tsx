@@ -9,6 +9,7 @@ import { Heart, Sparkles, ChevronRight, Calendar, Download, Check } from "lucide
 import { PackOpening } from "@/components/PackOpening";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/hooks/useAuth";
+import { HoloCard, CardFlipper, CardBack } from "@/components/HoloCard";
 
 export const Route = createFileRoute("/scan/$id")({
   head: () => ({ meta: [{ title: "Análise da carta…" }] }),
