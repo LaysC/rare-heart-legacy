@@ -218,17 +218,16 @@ export function CardBack({ className = "", printable = false }: { className?: st
           }}
         />
 
-        {/* OPÇÃO NUCLEAR ☢️ : Calculo nativo blindado (calc) que a biblioteca é OBRIGADA a ler */}
+        {/* CHEAT CODE PRO SAFARI: Posições Absolutas em Pixels quando for impressão! */}
         <div
           className="absolute"
           style={{
-            top: "calc(50% - 90px)",
-            left: "calc(50% - 90px)",
             width: "180px",
             height: "180px",
             borderRadius: "50%",
             background: "radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%)",
             boxShadow: "0 0 0 2px rgba(229,185,106,0.6), 0 0 40px rgba(255,215,150,0.4)",
+            ...(printable ? { top: "130px", left: "67.5px" } : { top: "calc(50% - 90px)", left: "calc(50% - 90px)" })
           }}
         />
 
@@ -238,12 +237,12 @@ export function CardBack({ className = "", printable = false }: { className?: st
           strokeWidth={1.5}
           className="absolute"
           style={{ 
-            top: "calc(50% - 50px)",
-            left: "calc(50% - 50px)",
             width: "100px", 
             height: "100px",
-            filter: "drop-shadow(0 4px 20px rgba(255,200,210,0.6))",
-            zIndex: 10
+            zIndex: 10,
+            // Desliga a sombra no Safari para ele não jogar o coração pro lado:
+            filter: printable ? "none" : "drop-shadow(0 4px 20px rgba(255,200,210,0.6))",
+            ...(printable ? { top: "170px", left: "107.5px" } : { top: "calc(50% - 50px)", left: "calc(50% - 50px)" })
           }}
         />
 
