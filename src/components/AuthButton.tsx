@@ -15,6 +15,12 @@ export function AuthButton() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // TRUQUE MÁGICO 2: Garante que o botão também saiba que o cache foi limpo
+    if (!sessionStorage.getItem("botao_cache_limpo")) {
+      sessionStorage.setItem("botao_cache_limpo", "true");
+      supabase.auth.signOut();
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setSession(session));
     return () => subscription.unsubscribe();
@@ -75,5 +81,3 @@ export function AuthButton() {
     </button>
   );
 }
-
-// Forçando a Vercel a limpar o cache do link principal

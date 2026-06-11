@@ -8,14 +8,26 @@ export function useAuth() {
 
   useEffect(() => {
     let alive = true;
-    supabase.auth.getUser().then(({ data }) => {
+
+    async function checkSession() {
+      // TRUQUE MÁGICO: Se for uma nova aba/visita, desloga para forçar a surpresa da data!
+      if (!sessionStorage.getItem("cache_limpo")) {
+        sessionStorage.setItem("cache_limpo", "true");
+        await supabase.auth.signOut();
+      }
+
+      const { data } = await supabase.auth.getUser();
       if (!alive) return;
       setUser(data.user ?? null);
       setLoading(false);
-    });
+    }
+
+    checkSession();
+
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(session?.user ?? null);
+      if (alive) setUser(session?.user ?? null);
     });
+
     return () => {
       alive = false;
       sub.subscription.unsubscribe();
