@@ -38,7 +38,6 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
   return (
     <div
-      // SE FOR IMPRESSÃO (printable), NÓS DESLIGAMOS A SOMBRA PARA NÃO DAR BORDA PRETA!
       className={`${!printable && (rare || frame === "holo") ? "holo-card" : ""} relative ${!printable ? "shadow-glow" : ""} ${className}`}
       style={{
         ...frameStyles[frame],
@@ -183,7 +182,6 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 export function CardBack({ className = "", printable = false }: { className?: string; printable?: boolean }) {
   return (
     <div
-      // TIRANDO A SOMBRA NA IMPRESSÃO PARA EVITAR BORDA PRETA
       className={`relative ${!printable ? "shadow-glow" : ""} ${className}`}
       style={{
         width: CARD_WIDTH,
@@ -195,7 +193,7 @@ export function CardBack({ className = "", printable = false }: { className?: st
       } as CSSProperties}
     >
       <div
-        className="relative h-full w-full overflow-hidden"
+        className="relative h-full w-full overflow-hidden grid place-items-center"
         style={{
           borderRadius: "1rem",
           background:
@@ -220,13 +218,10 @@ export function CardBack({ className = "", printable = false }: { className?: st
           }}
         />
 
-        {/* CÍRCULO MATEMÁTICO: Travado no centro perfeito, sem bugar na foto! */}
+        {/* TÉCNICA À PROVA DE FALHAS: gridArea 1/1 centraliza SEM usar o transform: translate do demônio! */}
         <div
-          className="absolute"
           style={{
-            left: "50%",
-            top: "50%",
-            transform: "translate(-50%, -50%)",
+            gridArea: "1 / 1",
             width: "180px",
             height: "180px",
             borderRadius: "50%",
@@ -235,18 +230,17 @@ export function CardBack({ className = "", printable = false }: { className?: st
           }}
         />
 
-        {/* CORAÇÃO MATEMÁTICO: Travado no centro perfeito! */}
+        {/* Coração cravado no meio também com gridArea */}
         <Heart
           fill="#fff5f7"
           stroke="#d4af37"
           strokeWidth={1.5}
-          className="absolute drop-shadow-[0_4px_20px_rgba(255,200,210,0.6)]"
           style={{ 
-            left: "50%",
-            top: "50%",
-            transform: "translate(-50%, -50%)",
+            gridArea: "1 / 1",
             width: "100px", 
-            height: "100px" 
+            height: "100px",
+            filter: "drop-shadow(0 4px 20px rgba(255,200,210,0.6))",
+            zIndex: 10
           }}
         />
 
