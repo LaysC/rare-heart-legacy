@@ -53,7 +53,6 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
           background: "linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.75))",
           border: "1px solid rgba(255,255,255,0.15)",
           padding: "3cqw",
-          // MUDANÇA: Aumentamos o espaçamento geral entre as seções
           gap: "1.75cqw", 
         }}
       >
@@ -122,7 +121,6 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
         {/* Body */}
         <div
-          // MUDANÇA: Aumentamos o tamanho da fonte e o espaçamento entre linhas (leading-normal)
           className="text-white/90 relative z-[4] leading-normal flex-1 overflow-y-auto"
           style={{ 
             fontSize: "clamp(0.65rem, 2.8cqw, 0.85rem)", 
@@ -134,11 +132,9 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
           <style>{`div::-webkit-scrollbar { display: none; }`}</style>
           <div className="pb-2">
             {card.description && (
-              // MUDANÇA: Aumentamos a margem inferior para empurrar o resto para baixo
               <p className="italic opacity-80 mb-[2cqw]">{card.description}</p> 
             )}
             {card.specialAttack && (
-              // MUDANÇA: Aumentamos os gaps internos e margens
               <div className="flex items-start gap-[1.75cqw] mb-[1.5cqw]"> 
                 <Zap className="text-amber-300 shrink-0" style={{ width: "3.2cqw", height: "3.2cqw", marginTop: "0.5cqw", minWidth: 10, minHeight: 10 }} />
                 <p>
@@ -147,7 +143,6 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
               </div>
             )}
             {card.ability && (
-              // MUDANÇA: Aumentamos o gap interno
               <div className="flex items-start gap-[1.75cqw]"> 
                 <Shield className="text-rose-300 shrink-0" style={{ width: "3.2cqw", height: "3.2cqw", marginTop: "0.5cqw", minWidth: 10, minHeight: 10 }} />
                 <p>
@@ -158,26 +153,27 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
           </div>
         </div>
 
-        {/* Footer */}
-        <div
-          // MUDANÇA: Aumentamos o padding superior, a fonte e a margem entre ícone e texto
-          className="mt-auto flex items-start justify-between gap-3 text-white/70 border-t border-white/10 relative z-[4] pt-3 shrink-0"
-          style={{ fontSize: "clamp(0.55rem, 2.3cqw, 0.7rem)" }}
-        >
-          <span className="flex items-start gap-1.5 min-w-0 flex-1 text-left leading-tight">
-            <Sparkles style={{ width: "2.8cqw", height: "2.8cqw", minWidth: 9, minHeight: 9 }} />
-            <span>{card.footer || "Edição Coração"}</span>
-          </span>
-          <span className="font-mono shrink-0">
-            #{card.id.slice(0, 6).toUpperCase()}
-          </span>
-        </div>
-
-        {printable && (
-          <div className="absolute bottom-1 left-1 right-1 text-center text-white/40" style={{ fontSize: "10px" }}>
-            {new Date(card.createdAt).toLocaleDateString()}
+        {/* Footer (Agora com a data organizada em uma linha própria!) */}
+        <div className="mt-auto flex flex-col relative z-[4] pt-3 shrink-0 border-t border-white/10">
+          <div
+            className="flex items-start justify-between gap-3 text-white/70"
+            style={{ fontSize: "clamp(0.55rem, 2.3cqw, 0.7rem)" }}
+          >
+            <span className="flex items-start gap-1.5 min-w-0 flex-1 text-left leading-tight">
+              <Sparkles style={{ width: "2.8cqw", height: "2.8cqw", minWidth: 9, minHeight: 9 }} />
+              <span>{card.footer || "Edição Coração"}</span>
+            </span>
+            <span className="font-mono shrink-0">
+              #{card.id.slice(0, 6).toUpperCase()}
+            </span>
           </div>
-        )}
+
+          {printable && (
+            <div className="text-center text-white/40 mt-1.5" style={{ fontSize: "0.55rem", letterSpacing: "0.05em" }}>
+              {new Date(card.createdAt).toLocaleDateString()}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -199,7 +195,6 @@ export function CardBack({ className = "", printable = false }: { className?: st
       } as CSSProperties}
     >
       <div
-        // A SOLUÇÃO AQUI: "flex flex-col items-center justify-center". Isso alinha tudo ao centro magicamente.
         className="relative h-full w-full overflow-hidden flex flex-col items-center justify-center"
         style={{
           borderRadius: "1rem",
@@ -225,7 +220,6 @@ export function CardBack({ className = "", printable = false }: { className?: st
           }}
         />
 
-        {/* O CÍRCULO E O CORAÇÃO ESTÃO JUNTOS E SEM "ABSOLUTE". À PROVA DE FALHAS! */}
         <div
           className="relative flex items-center justify-center"
           style={{
