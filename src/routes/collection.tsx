@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { getMyCollection, removeFromCollection } from "@/lib/collection.functions";
+import { getMyCollection } from "@/lib/collection.functions";
 import { HoloCard } from "@/components/HoloCard";
 import { useAuth } from "@/hooks/useAuth";
-import { Heart, Share2, Trash2, Sparkles } from "lucide-react";
+import { Heart, Share2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
 import { AuthButton } from "@/components/AuthButton";
@@ -18,7 +18,6 @@ export const Route = createFileRoute("/collection")({
 function CollectionPage() {
   const { user, loading } = useAuth();
   const fetchCollection = useServerFn(getMyCollection);
-  const removeFn = useServerFn(removeFromCollection);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["my-collection", user?.id],
@@ -71,12 +70,6 @@ function CollectionPage() {
     toast.success("Link copiado!");
   }
 
-  async function remove(id: string) {
-    await removeFn({ data: { cardId: id } });
-    await refetch();
-    toast.success("Removida da coleção");
-  }
-
   return (
     <main className="min-h-screen px-4 sm:px-6 py-10 max-w-6xl mx-auto">
       <Toaster position="top-center" richColors />
@@ -120,13 +113,7 @@ function CollectionPage() {
                 >
                   <Share2 size={11} /> Compartilhar
                 </button>
-                <button
-                  onClick={() => remove(card.id)}
-                  className="glass p-1.5 rounded-full hover:bg-white/10"
-                  title="Remover"
-                >
-                  <Trash2 size={12} />
-                </button>
+                {/* O BOTÃO DA LIXEIRA FOI REMOVIDO DAQUI! */}
               </div>
             </div>
           ))}

@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { type CardData } from "@/lib/cards";
 import { getPackageCards } from "@/lib/card-sync.functions";
 import { addToCollection } from "@/lib/collection.functions";
-import { HoloCard, CardFlipper, CardBack } from "@/components/HoloCard";
+import { HoloCard, CardFlipper } from "@/components/HoloCard";
 import { Heart, Sparkles, ChevronRight, Calendar, Download, Check } from "lucide-react";
 import { PackOpening } from "@/components/PackOpening";
 import { useServerFn } from "@tanstack/react-start";
@@ -354,19 +354,16 @@ function ScanPage() {
 
 function SaveableCard({ card, compact = false }: { card: CardData; compact?: boolean }) {
   const frontRef = useRef<HTMLDivElement>(null);
-  const backRef = useRef<HTMLDivElement>(null);
-  const [savedFront, setSavedFront] = useState(false);
-  const [savedBack, setSavedBack] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  async function onSave(side: "front" | "back") {
-    const ref = side === "front" ? frontRef : backRef;
-    if (!ref.current || busy) return;
+  async function onSave() {
+    if (!frontRef.current || busy) return;
     
     setBusy(true);
     try {
       const { toPng } = await import("html-to-image");
-      const node = ref.current;
+      const node = frontRef.current;
       
       await new Promise((resolve) => setTimeout(resolve, 150));
 
@@ -386,16 +383,11 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
       const a = document.createElement("a");
       const safeName = (card.name || "carta").replace(/[^a-z0-9\-_]+/gi, "_").toLowerCase();
       a.href = dataUrl;
-      a.download = `${safeName}-${side === "front" ? "frente" : "verso"}.png`;
+      a.download = `${safeName}.png`;
       a.click();
       
-      if (side === "front") {
-        setSavedFront(true);
-        setTimeout(() => setSavedFront(false), 2000);
-      } else {
-        setSavedBack(true);
-        setTimeout(() => setSavedBack(false), 2000);
-      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       console.error("Falha ao salvar carta", err);
       alert("Ops! O navegador não conseguiu salvar a imagem. Tente tirar um print da tela!");
@@ -423,6 +415,7 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
         )}
       </motion.div>
       
+      {/* ESTÚDIO FOTOGRÁFICO APENAS PARA A FRENTE DA CARTA */}
       {!compact && (
         <div
           aria-hidden
@@ -447,42 +440,20 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
           >
             <HoloCard card={card} printable={true} className="!w-[315px] !h-[440px] !m-0" />
           </div>
-
-          <div 
-            ref={backRef} 
-            style={{ 
-              width: "315px", 
-              height: "440px", 
-              display: "flex", 
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-          >
-            <CardBack printable={true} className="!w-[315px] !h-[440px] !m-0" />
-          </div>
         </div>
       )}
 
+      {/* BOTÃO ÚNICO DE SALVAR */}
       {!compact && (
         <div className="flex gap-3 mt-2 relative z-10">
           <button
             type="button"
-            onClick={() => onSave("front")}
+            onClick={onSave}
             disabled={busy}
             className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors"
           >
-            {savedFront ? <Check size={12} /> : <Download size={12} />}
-            {savedFront ? "Salva!" : "Salvar Frente"}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onSave("back")}
-            disabled={busy}
-            className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors"
-          >
-            {savedBack ? <Check size={12} /> : <Download size={12} />}
-            {savedBack ? "Salva!" : "Salvar Verso"}
+            {saved ? <Check size={12} /> : <Download size={12} />}
+            {saved ? "Salva!" : "Salvar Carta"}
           </button>
         </div>
       )}

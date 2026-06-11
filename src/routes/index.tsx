@@ -19,9 +19,6 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <main className="relative min-h-screen px-6 py-16 flex flex-col items-center justify-center text-center overflow-hidden">
-      <div className="absolute top-4 right-4 z-10">
-        <AuthButton />
-      </div>
       {/* Ambient glow */}
       <motion.div
         className="pointer-events-none absolute inset-0 -z-10 blur-3xl opacity-60"
@@ -71,14 +68,20 @@ function Index() {
           por você.
         </p>
 
-        <div className="mt-8 flex flex-col items-center gap-3">
+        <div className="mt-8 flex flex-col items-center gap-4">
           <Link
             to="/scanner"
-            className="bg-gradient-romance text-white px-8 py-4 rounded-full font-semibold inline-flex items-center gap-2 hover:scale-105 transition-transform shadow-glow text-base"
+            className="bg-gradient-romance text-white px-8 py-4 rounded-full font-semibold inline-flex items-center gap-2 hover:scale-105 transition-transform shadow-glow text-base w-full sm:w-auto justify-center"
           >
             <QrCode size={20} /> Escanear QR Code
           </Link>
-          <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
+          
+          {/* O BOTÃO VEIO PARAR AQUI EMBAIXO! MAIS LÓGICO E NÃO CORTA A TELA */}
+          <div className="mt-2">
+            <AuthButton />
+          </div>
+
+          <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1 mt-2">
             <Heart size={10} className="text-rose-300" /> feito com carinho para você
           </p>
         </div>
