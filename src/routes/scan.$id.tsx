@@ -4,8 +4,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { type CardData } from "@/lib/cards";
 import { getPackageCards } from "@/lib/card-sync.functions";
 import { addToCollection } from "@/lib/collection.functions";
-import { HoloCard, CardFlipper } from "@/components/HoloCard";
-import { Heart, Sparkles, ChevronRight, Calendar, Download, Check } from "lucide-react";
+// Trouxemos o CardBack para criar nosso próprio sistema de giro!
+import { HoloCard, CardBack } from "@/components/HoloCard";
+import { Heart, Sparkles, ChevronRight, Calendar, Download, Check, RotateCw } from "lucide-react";
 import { PackOpening } from "@/components/PackOpening";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/hooks/useAuth";
@@ -114,8 +115,6 @@ function ScanPage() {
   }
 
   return (
-    // ESTRUTURA LIMPA: Removido o overflow-x-hidden e travas horizontais.
-    // Agora a tela é livre igual à página de Coleção.
     <main className="min-h-screen px-4 sm:px-6 py-10 pb-32 max-w-6xl mx-auto flex flex-col items-center">
       <AnimatePresence mode="wait">
         {stage === "pack" && (
@@ -247,7 +246,7 @@ function ScanPage() {
             key={`reveal-${activeIdx}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center w-full mx-auto"
+            className="text-center w-full mx-auto flex flex-col items-center"
           >
             {cards.length > 1 && (
               <p className="text-[11px] uppercase tracking-[0.3em] text-rose-200/80 mb-6">
@@ -354,6 +353,54 @@ function ScanPage() {
   );
 }
 
+// ----------------------------------------------------------------------
+// O NOSSO MOTOR 3D À PROVA DE FALHAS, FEITO EXCLUSIVAMENTE PARA VOCÊ!
+// ----------------------------------------------------------------------
+function SafeCardFlipper({ card }: { card: CardData }) {
+  const [flipped, setFlipped] = useState(false);
+
+  return (
+    <div className="flex flex-col items-center gap-4 w-full shrink-0">
+      <div style={{ perspective: "1400px" }} className="w-[85vw] max-w-[340px] mx-auto">
+        <motion.div
+          className="w-full relative"
+          animate={{ rotateY: flipped ? 180 : 0 }}
+          transition={{ duration: 0.6, ease: "easeInOut" }}
+          style={{ transformStyle: "preserve-3d" }}
+        >
+          {/* A FRENTE DA CARTA: Ela dita o tamanho total e cresce livremente */}
+          <div
+            className="w-full relative"
+            style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
+          >
+            <HoloCard card={card} />
+          </div>
+
+          {/* O VERSO DA CARTA: Um "fantasma" absoluto que só estica para cobrir a frente */}
+          <div
+            className="absolute inset-0 w-full h-full"
+            style={{
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+              transform: "rotateY(180deg)",
+            }}
+          >
+            <CardBack className="w-full h-full" />
+          </div>
+        </motion.div>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setFlipped(!flipped)}
+        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors mt-2"
+      >
+        <RotateCw size={12} /> {flipped ? "Ver frente" : "Ver verso"}
+      </button>
+    </div>
+  );
+}
+
 function SaveableCard({ card, compact = false }: { card: CardData; compact?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const [saved, setSaved] = useState(false);
@@ -409,7 +456,8 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
             <HoloCard card={card} />
           </div>
         ) : (
-          <CardFlipper card={card} />
+          // CHAMANDO O NOSSO MOTOR 3D BLINDADO AQUI!
+          <SafeCardFlipper card={card} />
         )}
       </motion.div>
       

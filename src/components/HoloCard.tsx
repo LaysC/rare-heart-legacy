@@ -17,7 +17,6 @@ const rarityBadge: Record<string, string> = {
 };
 
 const CARD_WIDTH = "min(320px, calc(100vw - 3rem), 46svh)";
-const CARD_RATIO = "2.5 / 3.5";
 
 export function HoloCard({ card, className = "", printable = false }: Props) {
   const accent = card.primaryColor || "#ff4d6d";
@@ -43,15 +42,14 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
         ...frameStyles[frame],
         borderRadius: "1.25rem",
         width: CARD_WIDTH,
-        aspectRatio: CARD_RATIO,
-        // Garantimos que a carta vai esticar!
+        // LIBERDADE: A carta começa com um tamanho bom, mas pode crescer o quanto precisar!
+        minHeight: "440px", 
         height: "max-content",
-        minHeight: "100%", 
         containerType: "inline-size",
       } as CSSProperties}
     >
       <div
-        className="relative min-h-full w-full rounded-[1rem] flex flex-col overflow-hidden h-full"
+        className="relative w-full rounded-[1rem] flex flex-col overflow-hidden h-full"
         style={{
           background: "linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.75))",
           border: "1px solid rgba(255,255,255,0.15)",
@@ -150,8 +148,8 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
         {/* Footer */}
         <div
-          className="mt-auto flex items-start justify-between gap-2 text-white/70 border-t border-white/10 relative z-[4]"
-          style={{ fontSize: "clamp(0.48rem, 2.05cqw, 0.62rem)", paddingTop: "1.25cqw" }}
+          className="mt-auto flex items-start justify-between gap-2 text-white/70 border-t border-white/10 relative z-[4] pt-2"
+          style={{ fontSize: "clamp(0.48rem, 2.05cqw, 0.62rem)" }}
         >
           <span className="flex items-start gap-1 min-w-0 flex-1 text-left leading-tight">
             <Sparkles style={{ width: "2.6cqw", height: "2.6cqw", minWidth: 9, minHeight: 9 }} />
@@ -180,13 +178,11 @@ export function CardBack({ className = "" }: { className?: string }) {
       className={`relative shadow-glow ${className}`}
       style={{
         width: CARD_WIDTH,
-        aspectRatio: CARD_RATIO,
+        height: "100%", // O Verso agora vai esticar para copiar a altura da frente perfeitamente!
         borderRadius: "1.25rem",
         padding: 10,
         background:
           "linear-gradient(135deg, #d4af37 0%, #b8860b 30%, #8b1a3d 60%, #5b0e1a 100%)",
-        containerType: "inline-size",
-        height: "100%", // O Verso agora copia a altura da frente
       } as CSSProperties}
     >
       <div
@@ -263,43 +259,41 @@ export function CardFlipper({ card, className = "" }: { card: CardData; classNam
   return (
     <div className={`flex flex-col items-center gap-3 w-full ${className}`}>
       <div
-        className="relative flex justify-center"
-        style={{
-          perspective: 1400,
-          width: CARD_WIDTH,
-          height: "100%", // ADICIONADO: Agora a caixa acompanha o tamanho real da carta!
-          minHeight: "max-content",
-        }}
+        className="relative"
+        style={{ perspective: 1400, width: CARD_WIDTH }}
       >
         <div
-          className="grid transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] h-full w-full"
+          className="relative w-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
           style={{
             transformStyle: "preserve-3d",
             transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
           }}
         >
+          {/* A FRENTE DA CARTA DITA A ALTURA DA CAIXA (relative) */}
           <div
-            className="[grid-area:1/1] h-full flex justify-center"
+            className="relative w-full"
             style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
           >
             <HoloCard card={card} />
           </div>
+          
+          {/* O VERSO DA CARTA SE GRUDA NA FRENTE (absolute) E FICA DO MESMO TAMANHO! */}
           <div
-            className="[grid-area:1/1] h-full flex justify-center"
+            className="absolute inset-0 w-full h-full"
             style={{
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
             }}
           >
-            <CardBack className="h-full" />
+            <CardBack className="w-full h-full" />
           </div>
         </div>
       </div>
       <button
         type="button"
         onClick={() => setFlipped((f) => !f)}
-        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors mt-2 z-10 relative"
+        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors mt-2"
       >
         <RotateCw size={12} /> {flipped ? "Ver frente" : "Ver verso"}
       </button>
