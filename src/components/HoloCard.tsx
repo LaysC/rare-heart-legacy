@@ -53,7 +53,8 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
           background: "linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.75))",
           border: "1px solid rgba(255,255,255,0.15)",
           padding: "3cqw",
-          gap: "1.25cqw",
+          // MUDANÇA: Aumentamos o espaçamento geral entre as seções
+          gap: "1.75cqw", 
         }}
       >
         {/* Header */}
@@ -121,9 +122,10 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
         {/* Body */}
         <div
-          className="text-white/90 relative z-[4] leading-snug flex-1 overflow-y-auto"
+          // MUDANÇA: Aumentamos o tamanho da fonte e o espaçamento entre linhas (leading-normal)
+          className="text-white/90 relative z-[4] leading-normal flex-1 overflow-y-auto"
           style={{ 
-            fontSize: "clamp(0.55rem, 2.35cqw, 0.72rem)",
+            fontSize: "clamp(0.65rem, 2.8cqw, 0.85rem)", 
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             WebkitOverflowScrolling: "touch", 
@@ -132,19 +134,22 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
           <style>{`div::-webkit-scrollbar { display: none; }`}</style>
           <div className="pb-2">
             {card.description && (
-              <p className="italic opacity-80 mb-[1.5cqw]">{card.description}</p>
+              // MUDANÇA: Aumentamos a margem inferior para empurrar o resto para baixo
+              <p className="italic opacity-80 mb-[2cqw]">{card.description}</p> 
             )}
             {card.specialAttack && (
-              <div className="flex items-start gap-[1.5cqw] mb-[1cqw]">
-                <Zap className="text-amber-300 shrink-0" style={{ width: "3cqw", height: "3cqw", marginTop: "0.4cqw", minWidth: 10, minHeight: 10 }} />
+              // MUDANÇA: Aumentamos os gaps internos e margens
+              <div className="flex items-start gap-[1.75cqw] mb-[1.5cqw]"> 
+                <Zap className="text-amber-300 shrink-0" style={{ width: "3.2cqw", height: "3.2cqw", marginTop: "0.5cqw", minWidth: 10, minHeight: 10 }} />
                 <p>
                   <span className="font-bold">Ataque:</span> {card.specialAttack}
                 </p>
               </div>
             )}
             {card.ability && (
-              <div className="flex items-start gap-[1.5cqw]">
-                <Shield className="text-rose-300 shrink-0" style={{ width: "3cqw", height: "3cqw", marginTop: "0.4cqw", minWidth: 10, minHeight: 10 }} />
+              // MUDANÇA: Aumentamos o gap interno
+              <div className="flex items-start gap-[1.75cqw]"> 
+                <Shield className="text-rose-300 shrink-0" style={{ width: "3.2cqw", height: "3.2cqw", marginTop: "0.5cqw", minWidth: 10, minHeight: 10 }} />
                 <p>
                   <span className="font-bold">Habilidade:</span> {card.ability}
                 </p>
@@ -155,11 +160,12 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
         {/* Footer */}
         <div
-          className="mt-auto flex items-start justify-between gap-2 text-white/70 border-t border-white/10 relative z-[4] pt-2 shrink-0"
-          style={{ fontSize: "clamp(0.48rem, 2.05cqw, 0.62rem)" }}
+          // MUDANÇA: Aumentamos o padding superior, a fonte e a margem entre ícone e texto
+          className="mt-auto flex items-start justify-between gap-3 text-white/70 border-t border-white/10 relative z-[4] pt-3 shrink-0"
+          style={{ fontSize: "clamp(0.55rem, 2.3cqw, 0.7rem)" }}
         >
-          <span className="flex items-start gap-1 min-w-0 flex-1 text-left leading-tight">
-            <Sparkles style={{ width: "2.6cqw", height: "2.6cqw", minWidth: 9, minHeight: 9 }} />
+          <span className="flex items-start gap-1.5 min-w-0 flex-1 text-left leading-tight">
+            <Sparkles style={{ width: "2.8cqw", height: "2.8cqw", minWidth: 9, minHeight: 9 }} />
             <span>{card.footer || "Edição Coração"}</span>
           </span>
           <span className="font-mono shrink-0">
@@ -193,7 +199,8 @@ export function CardBack({ className = "", printable = false }: { className?: st
       } as CSSProperties}
     >
       <div
-        className="relative h-full w-full overflow-hidden"
+        // A SOLUÇÃO AQUI: "flex flex-col items-center justify-center". Isso alinha tudo ao centro magicamente.
+        className="relative h-full w-full overflow-hidden flex flex-col items-center justify-center"
         style={{
           borderRadius: "1rem",
           background:
@@ -218,33 +225,29 @@ export function CardBack({ className = "", printable = false }: { className?: st
           }}
         />
 
-        {/* CHEAT CODE PRO SAFARI: Posições Absolutas em Pixels quando for impressão! */}
+        {/* O CÍRCULO E O CORAÇÃO ESTÃO JUNTOS E SEM "ABSOLUTE". À PROVA DE FALHAS! */}
         <div
-          className="absolute"
+          className="relative flex items-center justify-center"
           style={{
             width: "180px",
             height: "180px",
             borderRadius: "50%",
             background: "radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%)",
             boxShadow: "0 0 0 2px rgba(229,185,106,0.6), 0 0 40px rgba(255,215,150,0.4)",
-            ...(printable ? { top: "130px", left: "67.5px" } : { top: "calc(50% - 90px)", left: "calc(50% - 90px)" })
-          }}
-        />
-
-        <Heart
-          fill="#fff5f7"
-          stroke="#d4af37"
-          strokeWidth={1.5}
-          className="absolute"
-          style={{ 
-            width: "100px", 
-            height: "100px",
             zIndex: 10,
-            // Desliga a sombra no Safari para ele não jogar o coração pro lado:
-            filter: printable ? "none" : "drop-shadow(0 4px 20px rgba(255,200,210,0.6))",
-            ...(printable ? { top: "170px", left: "107.5px" } : { top: "calc(50% - 50px)", left: "calc(50% - 50px)" })
           }}
-        />
+        >
+          <Heart
+            fill="#fff5f7"
+            stroke="#d4af37"
+            strokeWidth={1.5}
+            style={{ 
+              width: "100px", 
+              height: "100px",
+              filter: "drop-shadow(0 4px 20px rgba(255,200,210,0.6))"
+            }}
+          />
+        </div>
 
         <div
           className="absolute left-0 right-0 text-center uppercase tracking-[0.4em] text-amber-100/80"
