@@ -193,7 +193,7 @@ export function CardBack({ className = "", printable = false }: { className?: st
       } as CSSProperties}
     >
       <div
-        className="relative h-full w-full overflow-hidden grid place-items-center"
+        className="relative h-full w-full overflow-hidden" // Removemos o grid place-items-center!
         style={{
           borderRadius: "1rem",
           background:
@@ -218,10 +218,12 @@ export function CardBack({ className = "", printable = false }: { className?: st
           }}
         />
 
-        {/* TÉCNICA À PROVA DE FALHAS: gridArea 1/1 centraliza SEM usar o transform: translate do demônio! */}
+        {/* CÍRCULO: Centralização primitiva e indestrutível (inset: 0, margin: auto) */}
         <div
+          className="absolute"
           style={{
-            gridArea: "1 / 1",
+            inset: 0,
+            margin: "auto",
             width: "180px",
             height: "180px",
             borderRadius: "50%",
@@ -230,13 +232,15 @@ export function CardBack({ className = "", printable = false }: { className?: st
           }}
         />
 
-        {/* Coração cravado no meio também com gridArea */}
+        {/* CORAÇÃO: Centralização primitiva e indestrutível */}
         <Heart
           fill="#fff5f7"
           stroke="#d4af37"
           strokeWidth={1.5}
+          className="absolute"
           style={{ 
-            gridArea: "1 / 1",
+            inset: 0,
+            margin: "auto",
             width: "100px", 
             height: "100px",
             filter: "drop-shadow(0 4px 20px rgba(255,200,210,0.6))",

@@ -373,7 +373,7 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
       const dataUrl = await toPng(node, {
         pixelRatio: 3, 
         cacheBust: true,
-        backgroundColor: "rgba(255, 255, 255, 0)", // Fundo 100% limpo, sem dar tela preta!
+        backgroundColor: "rgba(255, 255, 255, 0)", 
         width: 315, 
         height: 440, 
         style: {
@@ -423,7 +423,6 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
         )}
       </motion.div>
       
-      {/* ESTÚDIO FOTOGRÁFICO SEM BORDA PRETA E SEM VAZAR COR */}
       {!compact && (
         <div
           aria-hidden
@@ -436,7 +435,6 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
             zIndex: -9999, 
           }}
         >
-          {/* SEM o overflow:hidden para não cortar a sombra ao meio, e sem border-radius! */}
           <div 
             ref={frontRef} 
             style={{ 
@@ -447,7 +445,6 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
               alignItems: "center"
             }}
           >
-            {/* O printable={true} avisa o HoloCard para desligar a sombra que causa a borda preta */}
             <HoloCard card={card} printable={true} className="!w-[315px] !h-[440px] !m-0" />
           </div>
 
