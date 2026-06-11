@@ -1,124 +1,87 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { getCard, type CardData } from "@/lib/cards";
-import { publishCardSnapshot } from "@/lib/card-sync.functions";
+import { useRef, useState } from "react";
+import { Download, Check, ChevronLeft } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { HoloCard } from "@/components/HoloCard";
-import { Printer, ArrowLeft, QrCode, Copy, Check } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
+import type { CardData } from "@/lib/cards";
 
-export const Route = createFileRoute("/card/$id")({
-  head: () => ({ meta: [{ title: "Carta" }] }),
-  component: CardView,
-});
+interface AdminCardViewProps {
+  card: CardData;
+}
 
-function CardView() {
-  const { id } = useParams({ from: "/card/$id" });
-  const publishCard = useServerFn(publishCardSnapshot);
-  const [card, setCard] = useState<CardData | undefined>();
-  const [qr, setQr] = useState<string>("");
-  const [scanUrl, setScanUrl] = useState("");
-  const [copied, setCopied] = useState(false);
+export function AdminCardPreview({ card }: AdminCardViewProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    const c = getCard(id);
-    setCard(c);
-    if (typeof window === "undefined" || !c) return;
-    publishCard({ data: c }).catch(() => undefined);
-    const url = `${window.location.origin}/scan/${id}`;
-    setScanUrl(url);
-    import("qrcode").then(({ default: QRCode }) =>
-      QRCode.toDataURL(url, {
-        width: 360,
-        margin: 1,
-        errorCorrectionLevel: "L",
-        color: { dark: "#1a0d1f", light: "#ffffff" },
-      })
-        .then(setQr)
-        .catch(() => {
-          // Fallback: tiny URL with just id (works if user opens on same device)
-          QRCode.toDataURL(`${window.location.origin}/scan/${id}`, {
-            width: 360,
-            margin: 1,
-            color: { dark: "#1a0d1f", light: "#ffffff" },
-          }).then(setQr);
-        }),
-    );
-  }, [id]);
+  async function onDownload() {
+    if (!cardRef.current || busy) return;
+    
+    setBusy(true);
+    try {
+      // Importa a biblioteca de imagem dinamicamente
+      const { toPng } = await import("html-to-image");
+      const node = cardRef.current;
+      
+      // Pequeno delay para garantir a renderização estável
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
-  if (!card) {
-    return (
-      <main className="min-h-screen grid place-items-center px-6">
-        <p className="text-muted-foreground">Carta não encontrada.</p>
-      </main>
-    );
+      const dataUrl = await toPng(node, {
+        pixelRatio: 3, // Alta definição para impressão
+        cacheBust: true,
+        backgroundColor: "rgba(255, 255, 255, 0)", // Fundo transparente limpo
+        width: 315, 
+        height: 440, 
+        style: {
+          transform: "none",
+          margin: "0",
+          animation: "none", 
+        },
+      });
+      
+      // Força o download do arquivo no navegador
+      const a = document.createElement("a");
+      const safeName = (card.name || "carta").replace(/[^a-z0-9\-_]+/gi, "_").toLowerCase();
+      a.href = dataUrl;
+      a.download = `admin-${safeName}.png`;
+      a.click();
+      
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      console.error("Falha ao baixar carta pelo admin", err);
+      alert("Ops! O navegador não conseguiu gerar a imagem dessa vez.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
-    <main className="min-h-screen px-6 py-10 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6 print:hidden">
-        <Link to="/admin" className="text-xs text-muted-foreground inline-flex items-center gap-1">
-          <ArrowLeft size={12} /> Painel
-        </Link>
-        <button
-          onClick={() => window.print()}
-          className="bg-gradient-romance text-white px-5 py-2.5 rounded-full text-sm font-semibold inline-flex items-center gap-2"
-        >
-          <Printer size={14} /> Imprimir
-        </button>
+    <div className="flex flex-col items-center gap-6 p-6 glass rounded-3xl max-w-sm mx-auto mt-6">
+      {/* Container invisível ou controlado para a foto sair perfeita */}
+      <div 
+        ref={cardRef} 
+        style={{ 
+          width: "315px", 
+          height: "440px", 
+          display: "flex", 
+          justifyContent: "center",
+          alignItems: "center"
+        }}
+      >
+        {/* Passamos printable={true} para desativar sombras pesadas que quebram o PNG */}
+        <HoloCard card={card} printable={true} className="!w-[315px] !h-[440px] !m-0" />
       </div>
 
-      <div className="grid md:grid-cols-2 gap-10 items-center justify-items-center print:grid-cols-2">
-        <HoloCard card={card} printable />
-        <div className="glass rounded-2xl p-8 text-center max-w-xs">
-          <div className="inline-flex items-center gap-1 text-xs uppercase tracking-widest text-muted-foreground mb-3">
-            <QrCode size={12} /> Escaneie
-          </div>
-          {qr && <img src={qr} alt="QR Code" className="w-full rounded-xl bg-white p-2" />}
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(scanUrl);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 1500);
-            }}
-            className="mt-4 text-[10px] text-muted-foreground break-all inline-flex items-center gap-1 hover:text-foreground print:hidden"
-          >
-            {copied ? <Check size={10} /> : <Copy size={10} />}
-            {copied ? "Copiado!" : "Copiar link completo"}
-          </button>
-          <p className="mt-3 text-sm font-semibold text-gradient-romance">
-            Aponte a câmera para revelar a carta.
-          </p>
-          <p className="mt-2 text-[10px] text-muted-foreground">
-            O QR abre a versão salva mais recente da carta, incluindo imagem e campos editados.
-          </p>
-        </div>
-      </div>
-
-      <style>{`
-        @media print {
-          @page {
-            size: A4 portrait;
-            margin: 1cm;
-          }
-          body { 
-            background: white !important; 
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .glass { 
-            background: white !important; 
-            box-shadow: none !important; 
-            border-color: #ddd !important; 
-          }
-          /* Força o contêiner da carta a ter um tamanho fixo para que o cqw funcione direito */
-          .holo-card {
-            width: 320px !important;
-            height: calc(320px * (3.5 / 2.5)) !important;
-            margin: 0 auto;
-            break-inside: avoid;
-          }
-        }
-      `}</style>
-    </main>
+      {/* Botão de Ação */}
+      <button
+        type="button"
+        onClick={onDownload}
+        disabled={busy}
+        className="bg-gradient-romance text-white px-6 py-2.5 rounded-full text-sm font-semibold inline-flex items-center gap-2 hover:scale-105 transition-transform shadow-glow w-full justify-center"
+      >
+        {saved ? <Check size={16} /> : <Download size={16} />}
+        {saved ? "Carta Baixada!" : "Baixar PNG para Impressão"}
+      </button>
+    </div>
   );
 }
