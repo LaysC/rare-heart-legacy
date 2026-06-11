@@ -193,7 +193,7 @@ export function CardBack({ className = "", printable = false }: { className?: st
       } as CSSProperties}
     >
       <div
-        className="relative h-full w-full overflow-hidden" // Removemos o grid place-items-center!
+        className="relative h-full w-full overflow-hidden"
         style={{
           borderRadius: "1rem",
           background:
@@ -218,12 +218,14 @@ export function CardBack({ className = "", printable = false }: { className?: st
           }}
         />
 
-        {/* CÍRCULO: Centralização primitiva e indestrutível (inset: 0, margin: auto) */}
+        {/* MATEMÁTICA BRUTA E INDESTRUTÍVEL */}
         <div
           className="absolute"
           style={{
-            inset: 0,
-            margin: "auto",
+            top: "50%",
+            left: "50%",
+            marginTop: "-90px", // Puxa pra cima metade da altura (180/2)
+            marginLeft: "-90px", // Puxa pro lado metade da largura (180/2)
             width: "180px",
             height: "180px",
             borderRadius: "50%",
@@ -232,15 +234,17 @@ export function CardBack({ className = "", printable = false }: { className?: st
           }}
         />
 
-        {/* CORAÇÃO: Centralização primitiva e indestrutível */}
+        {/* CORAÇÃO COM MATEMÁTICA BRUTA E INDESTRUTÍVEL */}
         <Heart
           fill="#fff5f7"
           stroke="#d4af37"
           strokeWidth={1.5}
           className="absolute"
           style={{ 
-            inset: 0,
-            margin: "auto",
+            top: "50%",
+            left: "50%",
+            marginTop: "-50px", // Puxa pra cima metade da altura (100/2)
+            marginLeft: "-50px", // Puxa pro lado metade da largura (100/2)
             width: "100px", 
             height: "100px",
             filter: "drop-shadow(0 4px 20px rgba(255,200,210,0.6))",
