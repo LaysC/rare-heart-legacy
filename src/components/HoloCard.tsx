@@ -193,7 +193,8 @@ export function CardBack({ className = "", printable = false }: { className?: st
       } as CSSProperties}
     >
       <div
-        className="relative h-full w-full overflow-hidden"
+        // A SOLUÇÃO AQUI: "flex flex-col items-center justify-center". Isso alinha tudo ao centro magicamente.
+        className="relative h-full w-full overflow-hidden flex flex-col items-center justify-center"
         style={{
           borderRadius: "1rem",
           background:
@@ -218,39 +219,29 @@ export function CardBack({ className = "", printable = false }: { className?: st
           }}
         />
 
-        {/* MATEMÁTICA BRUTA E INDESTRUTÍVEL */}
+        {/* O CÍRCULO E O CORAÇÃO ESTÃO JUNTOS E SEM "ABSOLUTE". À PROVA DE FALHAS! */}
         <div
-          className="absolute"
+          className="relative flex items-center justify-center"
           style={{
-            top: "50%",
-            left: "50%",
-            marginTop: "-90px", // Puxa pra cima metade da altura (180/2)
-            marginLeft: "-90px", // Puxa pro lado metade da largura (180/2)
             width: "180px",
             height: "180px",
             borderRadius: "50%",
             background: "radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%)",
             boxShadow: "0 0 0 2px rgba(229,185,106,0.6), 0 0 40px rgba(255,215,150,0.4)",
+            zIndex: 10,
           }}
-        />
-
-        {/* CORAÇÃO COM MATEMÁTICA BRUTA E INDESTRUTÍVEL */}
-        <Heart
-          fill="#fff5f7"
-          stroke="#d4af37"
-          strokeWidth={1.5}
-          className="absolute"
-          style={{ 
-            top: "50%",
-            left: "50%",
-            marginTop: "-50px", // Puxa pra cima metade da altura (100/2)
-            marginLeft: "-50px", // Puxa pro lado metade da largura (100/2)
-            width: "100px", 
-            height: "100px",
-            filter: "drop-shadow(0 4px 20px rgba(255,200,210,0.6))",
-            zIndex: 10
-          }}
-        />
+        >
+          <Heart
+            fill="#fff5f7"
+            stroke="#d4af37"
+            strokeWidth={1.5}
+            style={{ 
+              width: "100px", 
+              height: "100px",
+              filter: "drop-shadow(0 4px 20px rgba(255,200,210,0.6))"
+            }}
+          />
+        </div>
 
         <div
           className="absolute left-0 right-0 text-center uppercase tracking-[0.4em] text-amber-100/80"
