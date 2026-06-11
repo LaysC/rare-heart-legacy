@@ -17,6 +17,7 @@ const rarityBadge: Record<string, string> = {
 };
 
 const CARD_WIDTH = "min(320px, calc(100vw - 3rem), 46svh)";
+const CARD_RATIO = "2.5 / 3.5";
 
 export function HoloCard({ card, className = "", printable = false }: Props) {
   const accent = card.primaryColor || "#ff4d6d";
@@ -42,14 +43,12 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
         ...frameStyles[frame],
         borderRadius: "1.25rem",
         width: CARD_WIDTH,
-        // LIBERDADE: A carta começa com um tamanho bom, mas pode crescer o quanto precisar!
-        minHeight: "440px", 
-        height: "max-content",
+        aspectRatio: CARD_RATIO, // Devolvendo o formato perfeito da carta!
         containerType: "inline-size",
       } as CSSProperties}
     >
       <div
-        className="relative w-full rounded-[1rem] flex flex-col overflow-hidden h-full"
+        className="relative min-h-full w-full rounded-[1rem] flex flex-col overflow-hidden h-full"
         style={{
           background: "linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.75))",
           border: "1px solid rgba(255,255,255,0.15)",
@@ -58,7 +57,7 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
         }}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-2 text-white relative z-[4]">
+        <div className="flex items-start justify-between gap-2 text-white relative z-[4] shrink-0">
           <div className="flex flex-col">
             <span
               className="uppercase tracking-[0.2em] opacity-70 leading-tight"
@@ -89,7 +88,7 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
         {/* Image */}
         <div
-          className="relative flex-none rounded-md overflow-hidden border border-white/10 z-[5]"
+          className="relative flex-none rounded-md overflow-hidden border border-white/10 z-[5] shrink-0"
           style={{
             background: card.imageDataUrl
               ? "rgba(255,255,255,0.04)"
@@ -120,35 +119,42 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
           </div>
         </div>
 
-        {/* Body */}
+        {/* Body - A MÁGICA DO SCROLL ACONTECE AQUI! */}
         <div
-          className="text-white/90 relative z-[4] leading-snug flex-1"
-          style={{ fontSize: "clamp(0.55rem, 2.35cqw, 0.72rem)" }}
+          className="text-white/90 relative z-[4] leading-snug flex-1 overflow-y-auto"
+          style={{ 
+            fontSize: "clamp(0.55rem, 2.35cqw, 0.72rem)",
+            scrollbarWidth: "none", // Esconde a barra feia no Firefox
+            msOverflowStyle: "none", // Esconde no Edge
+          }}
         >
-          {card.description && (
-            <p className="italic opacity-80 mb-[1.5cqw]">{card.description}</p>
-          )}
-          {card.specialAttack && (
-            <div className="flex items-start gap-[1.5cqw] mb-[1cqw]">
-              <Zap className="text-amber-300 shrink-0" style={{ width: "3cqw", height: "3cqw", marginTop: "0.4cqw", minWidth: 10, minHeight: 10 }} />
-              <p>
-                <span className="font-bold">Ataque:</span> {card.specialAttack}
-              </p>
-            </div>
-          )}
-          {card.ability && (
-            <div className="flex items-start gap-[1.5cqw]">
-              <Shield className="text-rose-300 shrink-0" style={{ width: "3cqw", height: "3cqw", marginTop: "0.4cqw", minWidth: 10, minHeight: 10 }} />
-              <p>
-                <span className="font-bold">Habilidade:</span> {card.ability}
-              </p>
-            </div>
-          )}
+          <style>{`div::-webkit-scrollbar { display: none; }`}</style>
+          <div className="pb-2">
+            {card.description && (
+              <p className="italic opacity-80 mb-[1.5cqw]">{card.description}</p>
+            )}
+            {card.specialAttack && (
+              <div className="flex items-start gap-[1.5cqw] mb-[1cqw]">
+                <Zap className="text-amber-300 shrink-0" style={{ width: "3cqw", height: "3cqw", marginTop: "0.4cqw", minWidth: 10, minHeight: 10 }} />
+                <p>
+                  <span className="font-bold">Ataque:</span> {card.specialAttack}
+                </p>
+              </div>
+            )}
+            {card.ability && (
+              <div className="flex items-start gap-[1.5cqw]">
+                <Shield className="text-rose-300 shrink-0" style={{ width: "3cqw", height: "3cqw", marginTop: "0.4cqw", minWidth: 10, minHeight: 10 }} />
+                <p>
+                  <span className="font-bold">Habilidade:</span> {card.ability}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
         <div
-          className="mt-auto flex items-start justify-between gap-2 text-white/70 border-t border-white/10 relative z-[4] pt-2"
+          className="mt-auto flex items-start justify-between gap-2 text-white/70 border-t border-white/10 relative z-[4] pt-2 shrink-0"
           style={{ fontSize: "clamp(0.48rem, 2.05cqw, 0.62rem)" }}
         >
           <span className="flex items-start gap-1 min-w-0 flex-1 text-left leading-tight">
@@ -178,11 +184,12 @@ export function CardBack({ className = "" }: { className?: string }) {
       className={`relative shadow-glow ${className}`}
       style={{
         width: CARD_WIDTH,
-        height: "100%", // O Verso agora vai esticar para copiar a altura da frente perfeitamente!
+        aspectRatio: CARD_RATIO,
         borderRadius: "1.25rem",
         padding: 10,
         background:
           "linear-gradient(135deg, #d4af37 0%, #b8860b 30%, #8b1a3d 60%, #5b0e1a 100%)",
+        containerType: "inline-size",
       } as CSSProperties}
     >
       <div
@@ -260,24 +267,22 @@ export function CardFlipper({ card, className = "" }: { card: CardData; classNam
     <div className={`flex flex-col items-center gap-3 w-full ${className}`}>
       <div
         className="relative"
-        style={{ perspective: 1400, width: CARD_WIDTH }}
+        style={{ perspective: 1400, width: CARD_WIDTH, aspectRatio: CARD_RATIO }}
       >
         <div
-          className="relative w-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          className="relative w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
           style={{
             transformStyle: "preserve-3d",
             transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
           }}
         >
-          {/* A FRENTE DA CARTA DITA A ALTURA DA CAIXA (relative) */}
           <div
-            className="relative w-full"
+            className="absolute inset-0 w-full h-full"
             style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
           >
-            <HoloCard card={card} />
+            <HoloCard card={card} className="!w-full !h-full" />
           </div>
           
-          {/* O VERSO DA CARTA SE GRUDA NA FRENTE (absolute) E FICA DO MESMO TAMANHO! */}
           <div
             className="absolute inset-0 w-full h-full"
             style={{
