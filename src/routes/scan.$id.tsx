@@ -9,7 +9,6 @@ import { Heart, Sparkles, ChevronRight, Calendar, Download, Check } from "lucide
 import { PackOpening } from "@/components/PackOpening";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/hooks/useAuth";
-// O AuthButton foi removido daqui das importações também!
 
 export const Route = createFileRoute("/scan/$id")({
   head: () => ({ meta: [{ title: "Análise da carta…" }] }),
@@ -115,8 +114,8 @@ function ScanPage() {
   }
 
   return (
-    // Alteramos as classes principais para liberar o rolamento da tela no celular e evitar cortes!
-    <main className="min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto px-4 py-12 flex flex-col items-center justify-start md:justify-center">
+    // Reduzimos o padding lateral (px-2) no mobile para dar mais espaço à carta
+    <main className="min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto px-2 py-8 md:px-4 md:py-12 flex flex-col items-center justify-start md:justify-center">
       <AnimatePresence mode="wait">
         {stage === "pack" && (
           <motion.div
@@ -400,8 +399,8 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ scale: { type: "spring", stiffness: 80, damping: 14 } }}
-        // Adicionada uma largura fixa maior para a carta ter espaço de respirar!
-        className="w-[90vw] max-w-[360px]"
+        // Alteramos para ocupar toda a largura disponível (w-full) respeitando os limites seguros (max-w)
+        className="w-full max-w-[320px] md:max-w-[360px]"
       >
         {compact ? (
           <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }}>
