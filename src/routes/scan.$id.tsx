@@ -371,11 +371,11 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
       await new Promise((resolve) => setTimeout(resolve, 150));
 
       const dataUrl = await toPng(node, {
-        pixelRatio: 3, // Resolução 3x para impressão no Canva!
+        pixelRatio: 3, 
         cacheBust: true,
-        backgroundColor: "transparent",
-        width: 315, // Forçando a largura exata de proporção 6.3cm!
-        height: 440, // Forçando a altura exata de proporção 8.8cm!
+        backgroundColor: "rgba(255, 255, 255, 0)", // Fundo 100% limpo, sem dar tela preta!
+        width: 315, 
+        height: 440, 
         style: {
           transform: "none",
           margin: "0",
@@ -423,7 +423,7 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
         )}
       </motion.div>
       
-      {/* ESTÚDIO FOTOGRÁFICO: Proporção exata e resolução perfeita */}
+      {/* ESTÚDIO FOTOGRÁFICO SEM BORDA PRETA E SEM VAZAR COR */}
       {!compact && (
         <div
           aria-hidden
@@ -431,26 +431,24 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
             position: "absolute",
             top: 0,
             left: 0,
-            opacity: 0.001, // Praticamente invisível, mas o celular ainda "vê" para tirar a foto
+            opacity: 0.001, 
             pointerEvents: "none",
-            zIndex: -9999, // Fica lá atrás de tudo
+            zIndex: -9999, 
           }}
         >
-          {/* As medidas 315x440 garantem a proporção matemática de 6.3x8.8 */}
+          {/* SEM o overflow:hidden para não cortar a sombra ao meio, e sem border-radius! */}
           <div 
             ref={frontRef} 
             style={{ 
               width: "315px", 
               height: "440px", 
-              borderRadius: "1rem", 
-              overflow: "hidden",
-              display: "flex", // Centralizando à força
+              display: "flex", 
               justifyContent: "center",
               alignItems: "center"
             }}
           >
-            {/* O !w-full !h-full manda a carta assumir o tamanho 315x440 cravado */}
-            <HoloCard card={card} className="!w-full !h-full !m-0 !shadow-none" />
+            {/* O printable={true} avisa o HoloCard para desligar a sombra que causa a borda preta */}
+            <HoloCard card={card} printable={true} className="!w-[315px] !h-[440px] !m-0" />
           </div>
 
           <div 
@@ -458,14 +456,12 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
             style={{ 
               width: "315px", 
               height: "440px", 
-              borderRadius: "1rem", 
-              overflow: "hidden",
-              display: "flex", // Centralizando à força
+              display: "flex", 
               justifyContent: "center",
               alignItems: "center"
             }}
           >
-            <CardBack className="!w-full !h-full !m-0 !shadow-none" />
+            <CardBack printable={true} className="!w-[315px] !h-[440px] !m-0" />
           </div>
         </div>
       )}

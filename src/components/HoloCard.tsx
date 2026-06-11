@@ -16,7 +16,6 @@ const rarityBadge: Record<string, string> = {
   "Única": "bg-gradient-romance text-white",
 };
 
-// AS MEDIDAS BLINDADAS: Sem aspectRatio! Usamos CSS puro para calcular a altura exata.
 const CARD_WIDTH = "min(320px, 85vw)";
 const CARD_HEIGHT = "calc(min(320px, 85vw) * 1.4)"; 
 
@@ -28,7 +27,7 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
   const frameStyles: Record<string, React.CSSProperties> = {
     classic: { background: `linear-gradient(160deg, ${accent}, ${accent2})`, padding: 10 },
-    neon: { background: `linear-gradient(160deg, ${accent}, #000 70%)`, padding: 8, boxShadow: `0 0 30px ${accent}` },
+    neon: { background: `linear-gradient(160deg, ${accent}, #000 70%)`, padding: 8, boxShadow: printable ? "none" : `0 0 30px ${accent}` },
     gold: { background: `linear-gradient(160deg, #f6d365, #b8860b)`, padding: 12 },
     minimal: { background: `#0a0a0a`, padding: 6 },
     holo: {
@@ -39,12 +38,13 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
   return (
     <div
-      className={`${rare || frame === "holo" ? "holo-card" : ""} relative shadow-glow ${className}`}
+      // SE FOR IMPRESSÃO (printable), NÓS DESLIGAMOS A SOMBRA PARA NÃO DAR BORDA PRETA!
+      className={`${!printable && (rare || frame === "holo") ? "holo-card" : ""} relative ${!printable ? "shadow-glow" : ""} ${className}`}
       style={{
         ...frameStyles[frame],
         borderRadius: "1.25rem",
         width: CARD_WIDTH,
-        height: CARD_HEIGHT, // Forçando a altura na marra!
+        height: CARD_HEIGHT,
         containerType: "inline-size",
       } as CSSProperties}
     >
@@ -120,14 +120,14 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
           </div>
         </div>
 
-        {/* Body - A Rolagem Suave do iPhone */}
+        {/* Body */}
         <div
           className="text-white/90 relative z-[4] leading-snug flex-1 overflow-y-auto"
           style={{ 
             fontSize: "clamp(0.55rem, 2.35cqw, 0.72rem)",
             scrollbarWidth: "none",
             msOverflowStyle: "none",
-            WebkitOverflowScrolling: "touch", // Isso faz a rolagem no celular ficar perfeita!
+            WebkitOverflowScrolling: "touch", 
           }}
         >
           <style>{`div::-webkit-scrollbar { display: none; }`}</style>
@@ -169,7 +169,7 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
         </div>
 
         {printable && (
-          <div className="absolute bottom-1 left-1 right-1 text-center text-white/40" style={{ fontSize: "2cqw" }}>
+          <div className="absolute bottom-1 left-1 right-1 text-center text-white/40" style={{ fontSize: "10px" }}>
             {new Date(card.createdAt).toLocaleDateString()}
           </div>
         )}
@@ -180,13 +180,14 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
 /* ----------------- Card Back ----------------- */
 
-export function CardBack({ className = "" }: { className?: string }) {
+export function CardBack({ className = "", printable = false }: { className?: string; printable?: boolean }) {
   return (
     <div
-      className={`relative shadow-glow ${className}`}
+      // TIRANDO A SOMBRA NA IMPRESSÃO PARA EVITAR BORDA PRETA
+      className={`relative ${!printable ? "shadow-glow" : ""} ${className}`}
       style={{
         width: CARD_WIDTH,
-        height: CARD_HEIGHT, // Forçando a altura do verso também!
+        height: CARD_HEIGHT, 
         borderRadius: "1.25rem",
         padding: 10,
         background:
@@ -194,7 +195,7 @@ export function CardBack({ className = "" }: { className?: string }) {
       } as CSSProperties}
     >
       <div
-        className="relative h-full w-full overflow-hidden grid place-items-center"
+        className="relative h-full w-full overflow-hidden"
         style={{
           borderRadius: "1rem",
           background:
@@ -219,37 +220,47 @@ export function CardBack({ className = "" }: { className?: string }) {
           }}
         />
 
+        {/* CÍRCULO MATEMÁTICO: Travado no centro perfeito, sem bugar na foto! */}
         <div
           className="absolute"
           style={{
-            width: "60cqw",
-            height: "60cqw",
-            borderRadius: "9999px",
-            background:
-              "radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%)",
-            boxShadow:
-              "0 0 0 2px rgba(229,185,106,0.6), 0 0 40px rgba(255,215,150,0.4)",
+            left: "50%",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "180px",
+            height: "180px",
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%)",
+            boxShadow: "0 0 0 2px rgba(229,185,106,0.6), 0 0 40px rgba(255,215,150,0.4)",
           }}
         />
 
+        {/* CORAÇÃO MATEMÁTICO: Travado no centro perfeito! */}
         <Heart
           fill="#fff5f7"
           stroke="#d4af37"
           strokeWidth={1.5}
-          className="relative drop-shadow-[0_4px_20px_rgba(255,200,210,0.6)]"
-          style={{ width: "44cqw", height: "44cqw" }}
+          className="absolute drop-shadow-[0_4px_20px_rgba(255,200,210,0.6)]"
+          style={{ 
+            left: "50%",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "100px", 
+            height: "100px" 
+          }}
         />
 
         <div
-          className="absolute top-[6cqw] left-0 right-0 text-center uppercase tracking-[0.4em] text-amber-100/80"
-          style={{ fontSize: "clamp(0.55rem, 2.4cqw, 0.75rem)" }}
+          className="absolute left-0 right-0 text-center uppercase tracking-[0.4em] text-amber-100/80"
+          style={{ top: "24px", fontSize: "14px" }}
         >
           Edição
         </div>
         <div
-          className="absolute bottom-[6cqw] left-0 right-0 text-center font-bold tracking-[0.35em] text-amber-100"
+          className="absolute left-0 right-0 text-center font-bold tracking-[0.35em] text-amber-100"
           style={{
-            fontSize: "clamp(0.75rem, 4cqw, 1.1rem)",
+            bottom: "24px",
+            fontSize: "20px",
             textShadow: "0 2px 8px rgba(0,0,0,0.6)",
           }}
         >
