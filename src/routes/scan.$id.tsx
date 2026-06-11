@@ -9,7 +9,7 @@ import { Heart, Sparkles, ChevronRight, Calendar, Download, Check } from "lucide
 import { PackOpening } from "@/components/PackOpening";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/hooks/useAuth";
-import { AuthButton } from "@/components/AuthButton";
+// O AuthButton foi removido daqui das importações também!
 
 export const Route = createFileRoute("/scan/$id")({
   head: () => ({ meta: [{ title: "Análise da carta…" }] }),
@@ -61,7 +61,6 @@ function ScanPage() {
     };
   }, [id, fetchPackage]);
 
-  // Auto-add discovered cards to the signed-in user's collection.
   useEffect(() => {
     if (!user || cards.length === 0) return;
     cards.forEach((c) => {
@@ -75,9 +74,6 @@ function ScanPage() {
     return () => clearInterval(t);
   }, [stage]);
 
-  // Sequenced stage transitions — each stage schedules the next one.
-  // Chaining prevents the "infinite analysis" bug (when a single effect set
-  // multiple timers, switching stage cleared the remaining ones).
   useEffect(() => {
     const next: Partial<Record<Stage, { to: Stage; ms: number }>> = {
       opening: { to: "boot", ms: 2600 },
@@ -119,10 +115,8 @@ function ScanPage() {
   }
 
   return (
-    <main className="min-h-screen px-6 py-10 flex flex-col items-center justify-center">
-      <div className="absolute top-4 right-4 z-10">
-        <AuthButton />
-      </div>
+    // Alteramos as classes principais para liberar o rolamento da tela no celular e evitar cortes!
+    <main className="min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto px-4 py-12 flex flex-col items-center justify-start md:justify-center">
       <AnimatePresence mode="wait">
         {stage === "pack" && (
           <motion.div
@@ -130,7 +124,7 @@ function ScanPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-center"
+            className="text-center mt-auto mb-auto"
           >
             <PackOpening card={card} onOpen={() => setStage("opening")} />
           </motion.div>
@@ -142,9 +136,8 @@ function ScanPage() {
             initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="relative"
+            className="relative mt-auto mb-auto"
           >
-            {/* Burst flash */}
             <motion.div
               className="fixed inset-0 bg-white"
               initial={{ opacity: 0 }}
@@ -160,7 +153,6 @@ function ScanPage() {
               <div className="absolute inset-0 rounded-full bg-gradient-romance blur-3xl opacity-70 animate-pulse" />
               <div className="relative"><HoloCard card={card} /></div>
             </motion.div>
-            {/* Particles */}
             {Array.from({ length: 20 }).map((_, i) => (
               <motion.span
                 key={i}
@@ -183,7 +175,7 @@ function ScanPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-center"
+            className="text-center mt-auto mb-auto"
           >
             <div className="mx-auto w-16 h-16 rounded-full border-2 border-rose-400/40 border-t-rose-400 animate-spin" />
             <p className="mt-6 text-sm tracking-widest uppercase text-muted-foreground">
@@ -198,7 +190,7 @@ function ScanPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="text-center w-full max-w-md"
+            className="text-center w-full max-w-md mt-auto mb-auto"
           >
             <div className="relative mx-auto w-[240px] aspect-[2.5/3.5] rounded-2xl glass overflow-hidden">
               <div className="absolute inset-0 grid place-items-center text-white/30">
@@ -236,7 +228,7 @@ function ScanPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="glass rounded-2xl p-8 text-center max-w-sm"
+            className="glass rounded-2xl p-8 text-center max-w-sm mt-auto mb-auto"
           >
             <p className="text-xs uppercase tracking-widest text-rose-300 mb-3">
               Resultado parcial
@@ -255,7 +247,7 @@ function ScanPage() {
             key={`reveal-${activeIdx}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center flex flex-col items-center"
+            className="text-center flex flex-col items-center w-full"
           >
             {cards.length > 1 && (
               <p className="text-[11px] uppercase tracking-[0.3em] text-rose-200/80 mb-3">
@@ -267,7 +259,7 @@ function ScanPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.2 }}
-              className="mt-8 glass rounded-2xl p-6 max-w-md"
+              className="mt-8 glass rounded-2xl p-6 w-full max-w-md"
             >
               <p className="text-xs uppercase tracking-widest text-muted-foreground">Valor de mercado</p>
               <p className="text-3xl font-extrabold text-gradient-romance mt-1">{card.displayValue}</p>
@@ -287,7 +279,7 @@ function ScanPage() {
             key="final"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="max-w-2xl w-full"
+            className="max-w-2xl w-full mt-auto mb-auto"
           >
             <div className="text-center mb-8">
               <Heart className="mx-auto text-rose-300 mb-3" size={32} />
@@ -372,7 +364,6 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
       const { toPng } = await import("html-to-image");
       const node = ref.current;
       const rect = node.getBoundingClientRect();
-      // Round up so the bottom row of pixels is never clipped.
       const width = Math.ceil(rect.width);
       const height = Math.ceil(rect.height);
       const dataUrl = await toPng(node, {
@@ -384,7 +375,6 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
         canvasWidth: width,
         canvasHeight: height,
         style: {
-          // Neutralize parent transforms (rotateY animation) during capture.
           transform: "none",
           margin: "0",
           overflow: "visible",
@@ -405,11 +395,13 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
   }
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-3 w-full">
       <motion.div
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ scale: { type: "spring", stiffness: 80, damping: 14 } }}
+        // Adicionada uma largura fixa maior para a carta ter espaço de respirar!
+        className="w-[90vw] max-w-[360px]"
       >
         {compact ? (
           <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }}>
@@ -419,7 +411,7 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
           <CardFlipper card={card} />
         )}
       </motion.div>
-      {/* Hidden full-size card used for high-quality PNG export */}
+      
       {!compact && (
         <div
           ref={ref}
