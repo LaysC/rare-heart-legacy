@@ -16,8 +16,9 @@ const rarityBadge: Record<string, string> = {
   "Única": "bg-gradient-romance text-white",
 };
 
-const CARD_WIDTH = "min(320px, calc(100vw - 3rem), 46svh)";
-const CARD_RATIO = "2.5 / 3.5";
+// AS MEDIDAS BLINDADAS: Sem aspectRatio! Usamos CSS puro para calcular a altura exata.
+const CARD_WIDTH = "min(320px, 85vw)";
+const CARD_HEIGHT = "calc(min(320px, 85vw) * 1.4)"; 
 
 export function HoloCard({ card, className = "", printable = false }: Props) {
   const accent = card.primaryColor || "#ff4d6d";
@@ -43,12 +44,12 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
         ...frameStyles[frame],
         borderRadius: "1.25rem",
         width: CARD_WIDTH,
-        aspectRatio: CARD_RATIO, // Devolvendo o formato perfeito da carta!
+        height: CARD_HEIGHT, // Forçando a altura na marra!
         containerType: "inline-size",
       } as CSSProperties}
     >
       <div
-        className="relative min-h-full w-full rounded-[1rem] flex flex-col overflow-hidden h-full"
+        className="relative w-full h-full rounded-[1rem] flex flex-col overflow-hidden"
         style={{
           background: "linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.75))",
           border: "1px solid rgba(255,255,255,0.15)",
@@ -72,7 +73,7 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
               {card.name}
             </h3>
           </div>
-          <div className="flex items-center gap-1 text-right">
+          <div className="flex items-center gap-1 text-right shrink-0">
             <span
               className="opacity-70"
               style={{ fontSize: "clamp(0.55rem, 2.6cqw, 0.7rem)" }}
@@ -94,7 +95,7 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
               ? "rgba(255,255,255,0.04)"
               : `linear-gradient(135deg, ${accent}, ${accent2})`,
             isolation: "isolate",
-            height: "clamp(170px, 68cqw, 218px)",
+            height: "clamp(160px, 62cqw, 200px)",
           }}
         >
           {card.imageDataUrl ? (
@@ -119,13 +120,14 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
           </div>
         </div>
 
-        {/* Body - A MÁGICA DO SCROLL ACONTECE AQUI! */}
+        {/* Body - A Rolagem Suave do iPhone */}
         <div
           className="text-white/90 relative z-[4] leading-snug flex-1 overflow-y-auto"
           style={{ 
             fontSize: "clamp(0.55rem, 2.35cqw, 0.72rem)",
-            scrollbarWidth: "none", // Esconde a barra feia no Firefox
-            msOverflowStyle: "none", // Esconde no Edge
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            WebkitOverflowScrolling: "touch", // Isso faz a rolagem no celular ficar perfeita!
           }}
         >
           <style>{`div::-webkit-scrollbar { display: none; }`}</style>
@@ -184,12 +186,11 @@ export function CardBack({ className = "" }: { className?: string }) {
       className={`relative shadow-glow ${className}`}
       style={{
         width: CARD_WIDTH,
-        aspectRatio: CARD_RATIO,
+        height: CARD_HEIGHT, // Forçando a altura do verso também!
         borderRadius: "1.25rem",
         padding: 10,
         background:
           "linear-gradient(135deg, #d4af37 0%, #b8860b 30%, #8b1a3d 60%, #5b0e1a 100%)",
-        containerType: "inline-size",
       } as CSSProperties}
     >
       <div
@@ -264,10 +265,10 @@ export function CardBack({ className = "" }: { className?: string }) {
 export function CardFlipper({ card, className = "" }: { card: CardData; className?: string }) {
   const [flipped, setFlipped] = useState(false);
   return (
-    <div className={`flex flex-col items-center gap-3 w-full ${className}`}>
+    <div className={`flex flex-col items-center gap-4 w-full ${className}`}>
       <div
         className="relative"
-        style={{ perspective: 1400, width: CARD_WIDTH, aspectRatio: CARD_RATIO }}
+        style={{ perspective: 1400, width: CARD_WIDTH, height: CARD_HEIGHT }}
       >
         <div
           className="relative w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
@@ -280,7 +281,7 @@ export function CardFlipper({ card, className = "" }: { card: CardData; classNam
             className="absolute inset-0 w-full h-full"
             style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
           >
-            <HoloCard card={card} className="!w-full !h-full" />
+            <HoloCard card={card} />
           </div>
           
           <div
@@ -291,14 +292,14 @@ export function CardFlipper({ card, className = "" }: { card: CardData; classNam
               transform: "rotateY(180deg)",
             }}
           >
-            <CardBack className="w-full h-full" />
+            <CardBack />
           </div>
         </div>
       </div>
       <button
         type="button"
         onClick={() => setFlipped((f) => !f)}
-        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors mt-2"
+        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors mt-2 relative z-10"
       >
         <RotateCw size={12} /> {flipped ? "Ver frente" : "Ver verso"}
       </button>
