@@ -61,7 +61,7 @@ export function AuthButton() {
         <p className="text-sm font-medium text-rose-200 text-center">Qual é a nossa data?</p>
         <input 
           type="text" 
-          placeholder="Ex: 12/06/2024" 
+          placeholder="Pense bem.... demorou 8 meses" 
           value={senhaData} 
           onChange={(e) => setSenhaData(e.target.value)} 
           required 

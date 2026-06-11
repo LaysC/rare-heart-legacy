@@ -1,13 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getMyCollection } from "@/lib/collection.functions";
 import { HoloCard } from "@/components/HoloCard";
 import { useAuth } from "@/hooks/useAuth";
-import { Heart, Share2, Sparkles } from "lucide-react";
-import { toast } from "sonner";
-import { Toaster } from "sonner";
-import { AuthButton } from "@/components/AuthButton";
+import { Share2, Sparkles } from "lucide-react";
+import { toast, Toaster } from "sonner";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/collection")({
   ssr: false,
@@ -18,6 +17,7 @@ export const Route = createFileRoute("/collection")({
 function CollectionPage() {
   const { user, loading } = useAuth();
   const fetchCollection = useServerFn(getMyCollection);
+  const navigate = useNavigate({ from: "/collection" });
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["my-collection", user?.id],
@@ -25,33 +25,18 @@ function CollectionPage() {
     enabled: !!user,
   });
 
-  if (loading) {
+  // O TELETRANSPORTE: Se ele não estiver logado, joga pro início na hora!
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate({ to: "/", replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  // Enquanto carrega ou enquanto está sendo redirecionado, mostra só o spinner
+  if (loading || !user) {
     return (
       <main className="min-h-screen grid place-items-center">
         <div className="w-10 h-10 rounded-full border-2 border-rose-400/40 border-t-rose-400 animate-spin" />
-      </main>
-    );
-  }
-
-  // Tela de quando ele ainda não colocou a data
-  if (!user) {
-    return (
-      <main className="min-h-screen grid place-items-center px-6 text-center">
-        <div className="glass rounded-2xl p-8 max-w-sm">
-          <Heart className="mx-auto text-rose-300 mb-3" size={32} />
-          <h1 className="text-xl font-bold mb-2">Sua coleção</h1>
-          <p className="text-sm text-muted-foreground mb-5">
-            Coloque a nossa data para acessar as suas cartas.
-          </p>
-          
-          <div className="flex justify-center">
-            <AuthButton />
-          </div>
-
-          <div className="mt-4">
-            <Link to="/" className="text-xs text-muted-foreground">← voltar</Link>
-          </div>
-        </div>
       </main>
     );
   }
@@ -113,7 +98,6 @@ function CollectionPage() {
                 >
                   <Share2 size={11} /> Compartilhar
                 </button>
-                {/* O BOTÃO DA LIXEIRA FOI REMOVIDO DAQUI! */}
               </div>
             </div>
           ))}
