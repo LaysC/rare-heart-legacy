@@ -193,8 +193,7 @@ export function CardBack({ className = "", printable = false }: { className?: st
       } as CSSProperties}
     >
       <div
-        // A SOLUÇÃO AQUI: "flex flex-col items-center justify-center". Isso alinha tudo ao centro magicamente.
-        className="relative h-full w-full overflow-hidden flex flex-col items-center justify-center"
+        className="relative h-full w-full overflow-hidden"
         style={{
           borderRadius: "1rem",
           background:
@@ -219,29 +218,34 @@ export function CardBack({ className = "", printable = false }: { className?: st
           }}
         />
 
-        {/* O CÍRCULO E O CORAÇÃO ESTÃO JUNTOS E SEM "ABSOLUTE". À PROVA DE FALHAS! */}
+        {/* OPÇÃO NUCLEAR ☢️ : Calculo nativo blindado (calc) que a biblioteca é OBRIGADA a ler */}
         <div
-          className="relative flex items-center justify-center"
+          className="absolute"
           style={{
+            top: "calc(50% - 90px)",
+            left: "calc(50% - 90px)",
             width: "180px",
             height: "180px",
             borderRadius: "50%",
             background: "radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%)",
             boxShadow: "0 0 0 2px rgba(229,185,106,0.6), 0 0 40px rgba(255,215,150,0.4)",
-            zIndex: 10,
           }}
-        >
-          <Heart
-            fill="#fff5f7"
-            stroke="#d4af37"
-            strokeWidth={1.5}
-            style={{ 
-              width: "100px", 
-              height: "100px",
-              filter: "drop-shadow(0 4px 20px rgba(255,200,210,0.6))"
-            }}
-          />
-        </div>
+        />
+
+        <Heart
+          fill="#fff5f7"
+          stroke="#d4af37"
+          strokeWidth={1.5}
+          className="absolute"
+          style={{ 
+            top: "calc(50% - 50px)",
+            left: "calc(50% - 50px)",
+            width: "100px", 
+            height: "100px",
+            filter: "drop-shadow(0 4px 20px rgba(255,200,210,0.6))",
+            zIndex: 10
+          }}
+        />
 
         <div
           className="absolute left-0 right-0 text-center uppercase tracking-[0.4em] text-amber-100/80"
