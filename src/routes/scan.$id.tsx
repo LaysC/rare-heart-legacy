@@ -122,7 +122,7 @@ function ScanPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-center mt-20"
+            className="text-center mt-6" // <--- O espação sumiu aqui!
           >
             <PackOpening card={card} onOpen={() => setStage("opening")} />
           </motion.div>
@@ -353,42 +353,51 @@ function ScanPage() {
 }
 
 function SaveableCard({ card, compact = false }: { card: CardData; compact?: boolean }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [saved, setSaved] = useState(false);
+  const frontRef = useRef<HTMLDivElement>(null);
+  const backRef = useRef<HTMLDivElement>(null);
+  const [savedFront, setSavedFront] = useState(false);
+  const [savedBack, setSavedBack] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  async function onSave() {
+  async function onSave(side: "front" | "back") {
+    const ref = side === "front" ? frontRef : backRef;
     if (!ref.current || busy) return;
+    
     setBusy(true);
     try {
       const { toPng } = await import("html-to-image");
       const node = ref.current;
-      const rect = node.getBoundingClientRect();
-      const width = Math.ceil(rect.width);
-      const height = Math.ceil(rect.height);
+      
+      // Um pequeno truque de mestre para o iPhone respirar antes de tirar a foto
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
       const dataUrl = await toPng(node, {
-        pixelRatio: 4,
+        pixelRatio: 3, // Diminuímos um pouco para o celular não travar
         cacheBust: true,
         backgroundColor: "transparent",
-        width,
-        height,
-        canvasWidth: width,
-        canvasHeight: height,
         style: {
           transform: "none",
           margin: "0",
-          overflow: "visible",
+          animation: "none", // Desliga os brilhos na hora da foto para não dar tela branca!
         },
       });
+      
       const a = document.createElement("a");
       const safeName = (card.name || "carta").replace(/[^a-z0-9\-_]+/gi, "_").toLowerCase();
       a.href = dataUrl;
-      a.download = `${safeName}.png`;
+      a.download = `${safeName}-${side === "front" ? "frente" : "verso"}.png`;
       a.click();
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      
+      if (side === "front") {
+        setSavedFront(true);
+        setTimeout(() => setSavedFront(false), 2000);
+      } else {
+        setSavedBack(true);
+        setTimeout(() => setSavedBack(false), 2000);
+      }
     } catch (err) {
       console.error("Falha ao salvar carta", err);
+      alert("Ops! O navegador não conseguiu salvar a imagem. Tente tirar um print da tela!");
     } finally {
       setBusy(false);
     }
@@ -408,37 +417,58 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
           </div>
         ) : (
           <div className="w-[90vw] max-w-[340px] shrink-0">
-            {/* O Flipper original super confiável volta ao jogo! */}
             <CardFlipper card={card} />
           </div>
         )}
       </motion.div>
       
+      {/* O nosso "estúdio fotográfico" secreto para renderizar as duas imagens */}
       {!compact && (
         <div
-          ref={ref}
           aria-hidden
           style={{
-            position: "fixed",
-            top: 0,
-            left: -99999,
+            position: "absolute",
+            top: "-9999px",
+            left: "-9999px",
             pointerEvents: "none",
-            display: "inline-block",
-            padding: 4,
+            display: "flex",
+            gap: "20px",
+            opacity: 0,
           }}
         >
-          <HoloCard card={card} />
+          <div ref={frontRef} className="p-4" style={{ width: "340px" }}>
+            <HoloCard card={card} />
+          </div>
+          <div ref={backRef} className="p-4" style={{ width: "340px" }}>
+            <CardBack />
+          </div>
         </div>
       )}
-      {!compact && <button
-        type="button"
-        onClick={onSave}
-        disabled={busy}
-        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors mt-2"
-      >
-        {saved ? <Check size={12} /> : <Download size={12} />}
-        {saved ? "Salva!" : busy ? "Salvando…" : "Salvar carta"}
-      </button>}
+
+      {/* Os dois botões mágicos */}
+      {!compact && (
+        <div className="flex gap-3 mt-2 relative z-10">
+          <button
+            type="button"
+            onClick={() => onSave("front")}
+            disabled={busy}
+            className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors"
+          >
+            {savedFront ? <Check size={12} /> : <Download size={12} />}
+            {savedFront ? "Salva!" : "Salvar Frente"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSave("back")}
+            disabled={busy}
+            className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors"
+          >
+            {savedBack ? <Check size={12} /> : <Download size={12} />}
+            {savedBack ? "Salva!" : "Salvar Verso"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
