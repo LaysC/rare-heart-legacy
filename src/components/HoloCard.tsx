@@ -44,11 +44,14 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
         borderRadius: "1.25rem",
         width: CARD_WIDTH,
         aspectRatio: CARD_RATIO,
+        // Garantimos que a carta vai esticar!
+        height: "max-content",
+        minHeight: "100%", 
         containerType: "inline-size",
       } as CSSProperties}
     >
       <div
-        className="relative min-h-full w-full rounded-[1rem] flex flex-col overflow-hidden"
+        className="relative min-h-full w-full rounded-[1rem] flex flex-col overflow-hidden h-full"
         style={{
           background: "linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.75))",
           border: "1px solid rgba(255,255,255,0.15)",
@@ -121,7 +124,7 @@ export function HoloCard({ card, className = "", printable = false }: Props) {
 
         {/* Body */}
         <div
-          className="text-white/90 relative z-[4] leading-snug"
+          className="text-white/90 relative z-[4] leading-snug flex-1"
           style={{ fontSize: "clamp(0.55rem, 2.35cqw, 0.72rem)" }}
         >
           {card.description && (
@@ -183,6 +186,7 @@ export function CardBack({ className = "" }: { className?: string }) {
         background:
           "linear-gradient(135deg, #d4af37 0%, #b8860b 30%, #8b1a3d 60%, #5b0e1a 100%)",
         containerType: "inline-size",
+        height: "100%", // O Verso agora copia a altura da frente
       } as CSSProperties}
     >
       <div
@@ -195,7 +199,6 @@ export function CardBack({ className = "" }: { className?: string }) {
           boxShadow: "inset 0 0 40px rgba(0,0,0,0.6), inset 0 0 12px rgba(229,185,106,0.25)",
         }}
       >
-        {/* holo sheen */}
         <div
           className="absolute inset-0 opacity-25 pointer-events-none"
           style={{
@@ -204,7 +207,6 @@ export function CardBack({ className = "" }: { className?: string }) {
             mixBlendMode: "overlay",
           }}
         />
-        {/* radial sparkle pattern */}
         <div
           className="absolute inset-0 opacity-40 pointer-events-none"
           style={{
@@ -213,7 +215,6 @@ export function CardBack({ className = "" }: { className?: string }) {
           }}
         />
 
-        {/* gold rim circle behind heart */}
         <div
           className="absolute"
           style={{
@@ -227,7 +228,6 @@ export function CardBack({ className = "" }: { className?: string }) {
           }}
         />
 
-        {/* heart */}
         <Heart
           fill="#fff5f7"
           stroke="#d4af37"
@@ -236,14 +236,12 @@ export function CardBack({ className = "" }: { className?: string }) {
           style={{ width: "44cqw", height: "44cqw" }}
         />
 
-        {/* Top label */}
         <div
           className="absolute top-[6cqw] left-0 right-0 text-center uppercase tracking-[0.4em] text-amber-100/80"
           style={{ fontSize: "clamp(0.55rem, 2.4cqw, 0.75rem)" }}
         >
           Edição
         </div>
-        {/* Bottom label */}
         <div
           className="absolute bottom-[6cqw] left-0 right-0 text-center font-bold tracking-[0.35em] text-amber-100"
           style={{
@@ -263,29 +261,31 @@ export function CardBack({ className = "" }: { className?: string }) {
 export function CardFlipper({ card, className = "" }: { card: CardData; className?: string }) {
   const [flipped, setFlipped] = useState(false);
   return (
-    <div className={`flex flex-col items-center gap-3 ${className}`}>
+    <div className={`flex flex-col items-center gap-3 w-full ${className}`}>
       <div
-        className="relative"
+        className="relative flex justify-center"
         style={{
           perspective: 1400,
           width: CARD_WIDTH,
+          height: "100%", // ADICIONADO: Agora a caixa acompanha o tamanho real da carta!
+          minHeight: "max-content",
         }}
       >
         <div
-          className="grid w-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          className="grid transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] h-full w-full"
           style={{
             transformStyle: "preserve-3d",
             transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
           }}
         >
           <div
-            className="[grid-area:1/1]"
+            className="[grid-area:1/1] h-full flex justify-center"
             style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
           >
             <HoloCard card={card} />
           </div>
           <div
-            className="[grid-area:1/1] h-full"
+            className="[grid-area:1/1] h-full flex justify-center"
             style={{
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
@@ -299,7 +299,7 @@ export function CardFlipper({ card, className = "" }: { card: CardData; classNam
       <button
         type="button"
         onClick={() => setFlipped((f) => !f)}
-        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors"
+        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors mt-2 z-10 relative"
       >
         <RotateCw size={12} /> {flipped ? "Ver frente" : "Ver verso"}
       </button>
