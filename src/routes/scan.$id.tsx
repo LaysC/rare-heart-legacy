@@ -371,9 +371,11 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
       await new Promise((resolve) => setTimeout(resolve, 150));
 
       const dataUrl = await toPng(node, {
-        pixelRatio: 3, 
+        pixelRatio: 3, // Resolução 3x para impressão no Canva!
         cacheBust: true,
         backgroundColor: "transparent",
+        width: 315, // Forçando a largura exata de proporção 6.3cm!
+        height: 440, // Forçando a altura exata de proporção 8.8cm!
         style: {
           transform: "none",
           margin: "0",
@@ -421,24 +423,49 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
         )}
       </motion.div>
       
+      {/* ESTÚDIO FOTOGRÁFICO: Proporção exata e resolução perfeita */}
       {!compact && (
         <div
           aria-hidden
           style={{
             position: "absolute",
-            top: "-9999px",
-            left: "-9999px",
+            top: 0,
+            left: 0,
+            opacity: 0.001, // Praticamente invisível, mas o celular ainda "vê" para tirar a foto
             pointerEvents: "none",
-            display: "flex",
-            gap: "20px",
-            opacity: 0,
+            zIndex: -9999, // Fica lá atrás de tudo
           }}
         >
-          <div ref={frontRef} style={{ width: "340px", borderRadius: "1.25rem", overflow: "hidden" }}>
-            <HoloCard card={card} className="!shadow-none" />
+          {/* As medidas 315x440 garantem a proporção matemática de 6.3x8.8 */}
+          <div 
+            ref={frontRef} 
+            style={{ 
+              width: "315px", 
+              height: "440px", 
+              borderRadius: "1rem", 
+              overflow: "hidden",
+              display: "flex", // Centralizando à força
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            {/* O !w-full !h-full manda a carta assumir o tamanho 315x440 cravado */}
+            <HoloCard card={card} className="!w-full !h-full !m-0 !shadow-none" />
           </div>
-          <div ref={backRef} style={{ width: "340px", borderRadius: "1.25rem", overflow: "hidden" }}>
-            <CardBack className="!shadow-none" />
+
+          <div 
+            ref={backRef} 
+            style={{ 
+              width: "315px", 
+              height: "440px", 
+              borderRadius: "1rem", 
+              overflow: "hidden",
+              display: "flex", // Centralizando à força
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            <CardBack className="!w-full !h-full !m-0 !shadow-none" />
           </div>
         </div>
       )}
