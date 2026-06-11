@@ -114,8 +114,8 @@ function ScanPage() {
   }
 
   return (
-    // Reduzimos o padding lateral (px-2) no mobile para dar mais espaço à carta
-    <main className="min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto px-2 py-8 md:px-4 md:py-12 flex flex-col items-center justify-start md:justify-center">
+    // ADICIONAMOS "pb-32" AQUI para dar bastante espaço de rolagem no final da tela do celular!
+    <main className="min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto px-2 py-8 pb-32 md:px-4 md:py-12 flex flex-col items-center justify-start md:justify-center">
       <AnimatePresence mode="wait">
         {stage === "pack" && (
           <motion.div
@@ -135,7 +135,7 @@ function ScanPage() {
             initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="relative mt-auto mb-auto"
+            className="relative mt-auto mb-auto shrink-0"
           >
             <motion.div
               className="fixed inset-0 bg-white"
@@ -147,7 +147,7 @@ function ScanPage() {
               initial={{ scale: 0.2, opacity: 0, rotate: -30 }}
               animate={{ scale: 1.1, opacity: 1, rotate: 0 }}
               transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
-              className="relative"
+              className="relative shrink-0"
             >
               <div className="absolute inset-0 rounded-full bg-gradient-romance blur-3xl opacity-70 animate-pulse" />
               <div className="relative"><HoloCard card={card} /></div>
@@ -191,7 +191,7 @@ function ScanPage() {
             exit={{ opacity: 0 }}
             className="text-center w-full max-w-md mt-auto mb-auto"
           >
-            <div className="relative mx-auto w-[240px] aspect-[2.5/3.5] rounded-2xl glass overflow-hidden">
+            <div className="relative mx-auto w-[240px] aspect-[2.5/3.5] rounded-2xl glass overflow-hidden shrink-0">
               <div className="absolute inset-0 grid place-items-center text-white/30">
                 <Sparkles size={40} />
               </div>
@@ -227,7 +227,7 @@ function ScanPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="glass rounded-2xl p-8 text-center max-w-sm mt-auto mb-auto"
+            className="glass rounded-2xl p-8 text-center max-w-sm mt-auto mb-auto shrink-0"
           >
             <p className="text-xs uppercase tracking-widest text-rose-300 mb-3">
               Resultado parcial
@@ -246,7 +246,8 @@ function ScanPage() {
             key={`reveal-${activeIdx}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center flex flex-col items-center w-full"
+            // ADICIONAMOS "shrink-0" AQUI para impedir que a tela comprima a sessão inteira
+            className="text-center flex flex-col items-center w-full shrink-0"
           >
             {cards.length > 1 && (
               <p className="text-[11px] uppercase tracking-[0.3em] text-rose-200/80 mb-3">
@@ -258,7 +259,7 @@ function ScanPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.2 }}
-              className="mt-8 glass rounded-2xl p-6 w-full max-w-md"
+              className="mt-8 glass rounded-2xl p-6 w-full max-w-md shrink-0"
             >
               <p className="text-xs uppercase tracking-widest text-muted-foreground">Valor de mercado</p>
               <p className="text-3xl font-extrabold text-gradient-romance mt-1">{card.displayValue}</p>
@@ -278,7 +279,7 @@ function ScanPage() {
             key="final"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="max-w-2xl w-full mt-auto mb-auto"
+            className="max-w-2xl w-full mt-auto mb-auto shrink-0 pb-12"
           >
             <div className="text-center mb-8">
               <Heart className="mx-auto text-rose-300 mb-3" size={32} />
@@ -295,7 +296,7 @@ function ScanPage() {
             {cards.length > 1 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
                 {cards.map((c, i) => (
-                  <div key={c.id} className="glass rounded-2xl p-3 flex flex-col items-center gap-2">
+                  <div key={c.id} className="glass rounded-2xl p-3 flex flex-col items-center gap-2 shrink-0">
                     <SaveableCard card={c} compact />
                     <p className="text-[11px] text-center text-muted-foreground truncate w-full">
                       {i + 1}. {c.name}
@@ -394,16 +395,16 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
   }
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full">
+    // ADICIONAMOS "shrink-0" AQUI TAMBÉM para garantir a defesa total da carta!
+    <div className="flex flex-col items-center gap-3 w-full shrink-0">
       <motion.div
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ scale: { type: "spring", stiffness: 80, damping: 14 } }}
-        // Alteramos para ocupar toda a largura disponível (w-full) respeitando os limites seguros (max-w)
-        className="w-full max-w-[320px] md:max-w-[360px]"
+        className="w-[92vw] max-w-[360px] shrink-0"
       >
         {compact ? (
-          <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }}>
+          <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }} className="shrink-0">
             <HoloCard card={card} />
           </div>
         ) : (
@@ -431,7 +432,7 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
         type="button"
         onClick={onSave}
         disabled={busy}
-        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors"
+        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors mt-2"
       >
         {saved ? <Check size={12} /> : <Download size={12} />}
         {saved ? "Salva!" : busy ? "Salvando…" : "Salvar carta"}
