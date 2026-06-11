@@ -114,7 +114,6 @@ function ScanPage() {
   }
 
   return (
-    // RETIRAMOS as travas de flexbox que impediam o scroll!
     <main className="min-h-screen w-full overflow-x-hidden pt-10 pb-32 px-4 md:pt-16">
       <AnimatePresence mode="wait">
         {stage === "pack" && (
@@ -253,12 +252,14 @@ function ScanPage() {
                 Carta {activeIdx + 1} de {cards.length}
               </p>
             )}
+            
             <SaveableCard card={card} />
+            
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.2 }}
-              className="mt-8 glass rounded-2xl p-6 w-full max-w-[320px] md:max-w-md mx-auto"
+              className="mt-8 glass rounded-2xl p-6 w-full max-w-md mx-auto"
             >
               <p className="text-xs uppercase tracking-widest text-muted-foreground">Valor de mercado</p>
               <p className="text-3xl font-extrabold text-gradient-romance mt-1">{card.displayValue}</p>
@@ -394,14 +395,14 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full">
+    <div className="flex flex-col items-center gap-4 w-full overflow-visible">
+      {/* REMOVIDO COMPLETAMENTE o 'max-w-[300px]' daqui de baixo! */}
+      {/* Agora o componente vai renderizar livre e completo exatamente como faz na coleção! */}
       <motion.div
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ scale: { type: "spring", stiffness: 80, damping: 14 } }}
-        // DIMINUIMOS A LARGURA DA CARTA PARA 300px NO CELULAR!
-        // Isso obriga ela a ficar mais baixa e respeitar os limites da tela!
-        className="w-[85vw] max-w-[300px] md:max-w-[340px] mx-auto"
+        className="overflow-visible flex justify-center w-full"
       >
         {compact ? (
           <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }}>
