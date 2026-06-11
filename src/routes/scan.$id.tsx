@@ -4,12 +4,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { type CardData } from "@/lib/cards";
 import { getPackageCards } from "@/lib/card-sync.functions";
 import { addToCollection } from "@/lib/collection.functions";
-import { HoloCard, CardFlipper } from "@/components/HoloCard";
+import { HoloCard, CardFlipper, CardBack } from "@/components/HoloCard";
 import { Heart, Sparkles, ChevronRight, Calendar, Download, Check } from "lucide-react";
 import { PackOpening } from "@/components/PackOpening";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/hooks/useAuth";
-import { HoloCard, CardFlipper, CardBack } from "@/components/HoloCard";
 
 export const Route = createFileRoute("/scan/$id")({
   head: () => ({ meta: [{ title: "Análise da carta…" }] }),
@@ -123,7 +122,7 @@ function ScanPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-center mt-6" // <--- O espação sumiu aqui!
+            className="text-center mt-6"
           >
             <PackOpening card={card} onOpen={() => setStage("opening")} />
           </motion.div>
