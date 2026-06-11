@@ -114,8 +114,8 @@ function ScanPage() {
   }
 
   return (
-    // ADICIONAMOS "pb-32" AQUI para dar bastante espaço de rolagem no final da tela do celular!
-    <main className="min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto px-2 py-8 pb-32 md:px-4 md:py-12 flex flex-col items-center justify-start md:justify-center">
+    // RETIRAMOS as travas de flexbox que impediam o scroll!
+    <main className="min-h-screen w-full overflow-x-hidden pt-10 pb-32 px-4 md:pt-16">
       <AnimatePresence mode="wait">
         {stage === "pack" && (
           <motion.div
@@ -123,7 +123,7 @@ function ScanPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-center mt-auto mb-auto"
+            className="text-center mt-32"
           >
             <PackOpening card={card} onOpen={() => setStage("opening")} />
           </motion.div>
@@ -135,7 +135,7 @@ function ScanPage() {
             initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="relative mt-auto mb-auto shrink-0"
+            className="relative mt-32"
           >
             <motion.div
               className="fixed inset-0 bg-white"
@@ -147,7 +147,7 @@ function ScanPage() {
               initial={{ scale: 0.2, opacity: 0, rotate: -30 }}
               animate={{ scale: 1.1, opacity: 1, rotate: 0 }}
               transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
-              className="relative shrink-0"
+              className="relative flex justify-center"
             >
               <div className="absolute inset-0 rounded-full bg-gradient-romance blur-3xl opacity-70 animate-pulse" />
               <div className="relative"><HoloCard card={card} /></div>
@@ -174,7 +174,7 @@ function ScanPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-center mt-auto mb-auto"
+            className="text-center mt-32"
           >
             <div className="mx-auto w-16 h-16 rounded-full border-2 border-rose-400/40 border-t-rose-400 animate-spin" />
             <p className="mt-6 text-sm tracking-widest uppercase text-muted-foreground">
@@ -189,9 +189,9 @@ function ScanPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="text-center w-full max-w-md mt-auto mb-auto"
+            className="text-center w-full max-w-md mx-auto mt-20"
           >
-            <div className="relative mx-auto w-[240px] aspect-[2.5/3.5] rounded-2xl glass overflow-hidden shrink-0">
+            <div className="relative mx-auto w-[240px] aspect-[2.5/3.5] rounded-2xl glass overflow-hidden">
               <div className="absolute inset-0 grid place-items-center text-white/30">
                 <Sparkles size={40} />
               </div>
@@ -227,7 +227,7 @@ function ScanPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="glass rounded-2xl p-8 text-center max-w-sm mt-auto mb-auto shrink-0"
+            className="glass rounded-2xl p-8 text-center max-w-sm mx-auto mt-20"
           >
             <p className="text-xs uppercase tracking-widest text-rose-300 mb-3">
               Resultado parcial
@@ -246,11 +246,10 @@ function ScanPage() {
             key={`reveal-${activeIdx}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            // ADICIONAMOS "shrink-0" AQUI para impedir que a tela comprima a sessão inteira
-            className="text-center flex flex-col items-center w-full shrink-0"
+            className="text-center flex flex-col items-center w-full mx-auto"
           >
             {cards.length > 1 && (
-              <p className="text-[11px] uppercase tracking-[0.3em] text-rose-200/80 mb-3">
+              <p className="text-[11px] uppercase tracking-[0.3em] text-rose-200/80 mb-6">
                 Carta {activeIdx + 1} de {cards.length}
               </p>
             )}
@@ -259,7 +258,7 @@ function ScanPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.2 }}
-              className="mt-8 glass rounded-2xl p-6 w-full max-w-md shrink-0"
+              className="mt-8 glass rounded-2xl p-6 w-full max-w-[320px] md:max-w-md mx-auto"
             >
               <p className="text-xs uppercase tracking-widest text-muted-foreground">Valor de mercado</p>
               <p className="text-3xl font-extrabold text-gradient-romance mt-1">{card.displayValue}</p>
@@ -279,7 +278,7 @@ function ScanPage() {
             key="final"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="max-w-2xl w-full mt-auto mb-auto shrink-0 pb-12"
+            className="max-w-2xl w-full mx-auto mt-10"
           >
             <div className="text-center mb-8">
               <Heart className="mx-auto text-rose-300 mb-3" size={32} />
@@ -296,7 +295,7 @@ function ScanPage() {
             {cards.length > 1 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
                 {cards.map((c, i) => (
-                  <div key={c.id} className="glass rounded-2xl p-3 flex flex-col items-center gap-2 shrink-0">
+                  <div key={c.id} className="glass rounded-2xl p-3 flex flex-col items-center gap-2">
                     <SaveableCard card={c} compact />
                     <p className="text-[11px] text-center text-muted-foreground truncate w-full">
                       {i + 1}. {c.name}
@@ -395,16 +394,17 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
   }
 
   return (
-    // ADICIONAMOS "shrink-0" AQUI TAMBÉM para garantir a defesa total da carta!
-    <div className="flex flex-col items-center gap-3 w-full shrink-0">
+    <div className="flex flex-col items-center gap-4 w-full">
       <motion.div
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ scale: { type: "spring", stiffness: 80, damping: 14 } }}
-        className="w-[92vw] max-w-[360px] shrink-0"
+        // DIMINUIMOS A LARGURA DA CARTA PARA 300px NO CELULAR!
+        // Isso obriga ela a ficar mais baixa e respeitar os limites da tela!
+        className="w-[85vw] max-w-[300px] md:max-w-[340px] mx-auto"
       >
         {compact ? (
-          <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }} className="shrink-0">
+          <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }}>
             <HoloCard card={card} />
           </div>
         ) : (
@@ -432,7 +432,7 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
         type="button"
         onClick={onSave}
         disabled={busy}
-        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors mt-2"
+        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors"
       >
         {saved ? <Check size={12} /> : <Download size={12} />}
         {saved ? "Salva!" : busy ? "Salvando…" : "Salvar carta"}
