@@ -368,17 +368,16 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
       const { toPng } = await import("html-to-image");
       const node = ref.current;
       
-      // Um pequeno truque de mestre para o iPhone respirar antes de tirar a foto
       await new Promise((resolve) => setTimeout(resolve, 150));
 
       const dataUrl = await toPng(node, {
-        pixelRatio: 3, // Diminuímos um pouco para o celular não travar
+        pixelRatio: 3, 
         cacheBust: true,
         backgroundColor: "transparent",
         style: {
           transform: "none",
           margin: "0",
-          animation: "none", // Desliga os brilhos na hora da foto para não dar tela branca!
+          animation: "none", 
         },
       });
       
@@ -422,7 +421,6 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
         )}
       </motion.div>
       
-      {/* O nosso "estúdio fotográfico" secreto para renderizar as duas imagens */}
       {!compact && (
         <div
           aria-hidden
@@ -436,16 +434,15 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
             opacity: 0,
           }}
         >
-          <div ref={frontRef} className="p-4" style={{ width: "340px" }}>
-            <HoloCard card={card} />
+          <div ref={frontRef} style={{ width: "340px", borderRadius: "1.25rem", overflow: "hidden" }}>
+            <HoloCard card={card} className="!shadow-none" />
           </div>
-          <div ref={backRef} className="p-4" style={{ width: "340px" }}>
-            <CardBack />
+          <div ref={backRef} style={{ width: "340px", borderRadius: "1.25rem", overflow: "hidden" }}>
+            <CardBack className="!shadow-none" />
           </div>
         </div>
       )}
 
-      {/* Os dois botões mágicos */}
       {!compact && (
         <div className="flex gap-3 mt-2 relative z-10">
           <button
