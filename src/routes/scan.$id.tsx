@@ -93,7 +93,7 @@ function ScanPage() {
   if (!card) {
     return (
       <main className="min-h-screen grid place-items-center px-6 text-center">
-        <div className="glass rounded-2xl p-8 max-w-sm">
+        <div className="glass rounded-2xl p-8 max-w-sm mx-auto">
           <p className="text-muted-foreground mb-3">Carta não encontrada.</p>
           <p className="text-xs text-muted-foreground">
             Esta carta não está mais disponível no painel administrativo.
@@ -114,7 +114,9 @@ function ScanPage() {
   }
 
   return (
-    <main className="min-h-screen w-full overflow-x-hidden pt-10 pb-32 px-4 md:pt-16">
+    // ESTRUTURA LIMPA: Removido o overflow-x-hidden e travas horizontais.
+    // Agora a tela é livre igual à página de Coleção.
+    <main className="min-h-screen px-4 sm:px-6 py-10 pb-32 max-w-6xl mx-auto flex flex-col items-center">
       <AnimatePresence mode="wait">
         {stage === "pack" && (
           <motion.div
@@ -122,7 +124,7 @@ function ScanPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-center mt-32"
+            className="text-center mt-20"
           >
             <PackOpening card={card} onOpen={() => setStage("opening")} />
           </motion.div>
@@ -134,7 +136,7 @@ function ScanPage() {
             initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="relative mt-32"
+            className="relative mt-20"
           >
             <motion.div
               className="fixed inset-0 bg-white"
@@ -173,7 +175,7 @@ function ScanPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-center mt-32"
+            className="text-center mt-20"
           >
             <div className="mx-auto w-16 h-16 rounded-full border-2 border-rose-400/40 border-t-rose-400 animate-spin" />
             <p className="mt-6 text-sm tracking-widest uppercase text-muted-foreground">
@@ -188,7 +190,7 @@ function ScanPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="text-center w-full max-w-md mx-auto mt-20"
+            className="text-center w-full max-w-md mx-auto mt-10"
           >
             <div className="relative mx-auto w-[240px] aspect-[2.5/3.5] rounded-2xl glass overflow-hidden">
               <div className="absolute inset-0 grid place-items-center text-white/30">
@@ -226,7 +228,7 @@ function ScanPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="glass rounded-2xl p-8 text-center max-w-sm mx-auto mt-20"
+            className="glass rounded-2xl p-8 text-center max-w-sm mx-auto mt-10"
           >
             <p className="text-xs uppercase tracking-widest text-rose-300 mb-3">
               Resultado parcial
@@ -245,7 +247,7 @@ function ScanPage() {
             key={`reveal-${activeIdx}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center flex flex-col items-center w-full mx-auto"
+            className="text-center w-full mx-auto"
           >
             {cards.length > 1 && (
               <p className="text-[11px] uppercase tracking-[0.3em] text-rose-200/80 mb-6">
@@ -395,14 +397,12 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full overflow-visible">
-      {/* REMOVIDO COMPLETAMENTE o 'max-w-[300px]' daqui de baixo! */}
-      {/* Agora o componente vai renderizar livre e completo exatamente como faz na coleção! */}
+    <div className="w-full flex flex-col items-center gap-4">
       <motion.div
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ scale: { type: "spring", stiffness: 80, damping: 14 } }}
-        className="overflow-visible flex justify-center w-full"
+        className="w-full flex justify-center"
       >
         {compact ? (
           <div style={{ transform: "scale(0.5)", transformOrigin: "top center", marginBottom: -180 }}>
@@ -433,7 +433,7 @@ function SaveableCard({ card, compact = false }: { card: CardData; compact?: boo
         type="button"
         onClick={onSave}
         disabled={busy}
-        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors"
+        className="glass px-4 py-2 rounded-full text-xs inline-flex items-center gap-1.5 hover:bg-white/10 transition-colors mt-2"
       >
         {saved ? <Check size={12} /> : <Download size={12} />}
         {saved ? "Salva!" : busy ? "Salvando…" : "Salvar carta"}
